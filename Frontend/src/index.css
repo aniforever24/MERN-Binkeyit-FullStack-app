@@ -1,0 +1,89 @@
+@import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap");
+
+@import "tailwindcss";
+
+/* .text-shadow-sm {
+	@apply [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)];
+}
+
+.text-shadow-md {
+	@apply [text-shadow:2px_2px_4px_rgba(0,0,0,0.5)];
+}
+
+.text-shadow-lg {
+	@apply [text-shadow:3px_3px_6px_rgba(0,0,0,0.7)];
+} */
+
+@theme {
+	--font-kanit: "Kanit", "sans-serif";
+	--font-roboto: "Roboto", "sans-serif";
+	--font-nunito: "Nunito Sans", sans-serif;
+	--font-source-sans-3: "Source Sans 3", "sans-serif";
+	--color-primary-100: #ffc929;
+	--color-primary-200: #ffbf00;
+	--color-secondary-100: oklch(0.527 0.154 150.069);
+	--color-secondary-200: oklch(0.448 0.119 151.328);
+	--color-custom-blue: #1e3a8a;
+	--color-custom-red: #dc2626;
+
+	--color-productGray: var(--color-gray-500);
+
+	/* ... */
+}
+
+body {
+	font-family: "Poppins", serif;
+}
+
+/* Hide spinners for Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Hide spinners for Firefox */
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+/* Scrollbar narrow */
+@layer utilities {
+	.scrollbar-hidden {
+		overflow: auto; /* allow scrolling */
+		scrollbar-width: none; /* Firefox */
+		-ms-overflow-style: none; /* IE 10+ */
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	.scrollbar-narrow {
+		scrollbar-width: thin; /* For Firefox */
+	}
+
+	.scrollbar-narrow::-webkit-scrollbar {
+		width: 6px;
+		height: 6px;
+	}
+
+	.scrollbar-narrow::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.scrollbar-narrow::-webkit-scrollbar-thumb {
+		background-color: rgb(156 163 175); /* Tailwind gray-400 */
+		border-radius: 9999px; /* fully rounded */
+	}
+
+	.scrollbar-narrow::-webkit-scrollbar-thumb:hover {
+		background-color: rgb(107 114 128); /* Tailwind gray-500 */
+	}
+}
+/* Scrollbar color modifiers */
+[class*="scrollbar-color-"]::-webkit-scrollbar-thumb {
+	background-color: var(--scrollbar-thumb);
+}
+[class*="scrollbar-track-color"]::-webkit-scrollbar-track {
+	background-color: var(--scrollbar-track);
+}

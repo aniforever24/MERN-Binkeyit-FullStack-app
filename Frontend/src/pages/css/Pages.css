@@ -1,0 +1,44 @@
+._editBtn, ._deleteBtn {
+    --h: 0%;
+    --o: 0%;
+}
+._editBtn:hover, ._deleteBtn:hover {
+    --h: 100%;
+    --o: 75%;
+}
+
+._editBtn::before, ._deleteBtn::before {
+    content: "Clear all";
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 80px;
+    font-size: 12px;
+    background-color: black;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 5px;
+    opacity: var(--h);
+    transition: all 0.5s;
+}
+
+
+._editBtn::before {
+    content: "Edit";
+    text-align: center;
+    background-color: green;
+    opacity: var(--o);
+}
+
+._deleteBtn::before {
+    content: "Delete";
+    text-align: center;
+    background-color: red;
+    opacity: var(--o);
+}
+
+@media screen and (max-width: 640px) {
+    ._editBtn::before, ._deleteBtn::before {
+        display: none;
+    }
+}
