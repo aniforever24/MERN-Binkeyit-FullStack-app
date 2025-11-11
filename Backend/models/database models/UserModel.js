@@ -86,6 +86,10 @@ const userSchema = new Schema({
         type: String,
         enum: ["USER", "ADMIN"],
         default: "USER"
+    },
+    runOnce: {
+        type: Boolean,
+        default: false,
     }
 },
     { timestamps: true });

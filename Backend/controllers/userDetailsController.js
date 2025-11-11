@@ -4,7 +4,17 @@ import { genericServerErr } from "../utlis/genericServerErr.js";
 export default async function userDetailsController(req, res) {
     try {
         const { id, accessToken } = req;
-        const user = await User.findById(id, ('-password -mobileOTP -refreshToken -forgotPasswordOTP -forgotPasswordExpiry'));
+        let { shoppingCartPopulate } = req.body
+
+        if(shoppingCartPopulate) {
+           shoppingCartPopulate = "shoppingCart"
+        } else {
+            shoppingCartPopulate = ""
+        }
+
+
+        const user = await User.findById(id, ('-password -mobileOTP -refreshToken -forgotPasswordOTP -forgotPasswordExpiry'))
+                                .populate(shoppingCartPopulate)
 
         // check if client side local storage contains accessToken
         let access_Token;

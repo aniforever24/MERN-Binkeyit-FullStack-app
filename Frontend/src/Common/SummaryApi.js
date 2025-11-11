@@ -8,7 +8,7 @@ const SummaryApi = {
     signup: reqConfig("/api/user/signup", 'post'),
     login: reqConfig("/api/user/login", 'post'),
     refresh_Token: reqConfig('/auth/refresh-token', 'post'),
-    user_details: reqConfig('/auth/user/user-details', "get"),
+    user_details: reqConfig('/auth/user/user-details', "post"),
     logout: reqConfig('/auth/user/logout', 'put'),
     upload_avatar: reqConfig('/auth/user/upload-avatar', 'put'),
     update_userDetails: reqConfig('/auth/user/update-user-details', 'put'),

@@ -25,6 +25,9 @@ const RefreshHandler = () => {
 	const fetchUserDetails = async () => {
 		const { data: responseData } = await authAxiosInstance({
 			...SummaryApi.user_details,
+			data: {
+				shoppingCartPopulate: true
+			}
 		});
 		return responseData.data;
 	};
@@ -36,7 +39,7 @@ const RefreshHandler = () => {
 		) {
 			fetchUserDetails()
 				.then((data) => {
-					// console.log("data.user", data.user);
+					console.log("user details", data);
 					const accessToken = data?.accessToken;
 					if (accessToken) localStorage.setItem("accessToken", accessToken);
 

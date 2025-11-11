@@ -13,7 +13,7 @@ import axiosErrorMsg from "../utils/axiosError";
 import Spinner from "./Spinner";
 import { FaPlus, FaMinus } from "react-icons/fa6";
 import { notifySuccess, notifyWarning } from "../utils/foxToast";
-import { calculateDiscountedPrice, formatCurrency } from "../utils/UtilityFunctions";
+import { calculateDiscountedPrice, debounce, formatCurrency } from "../utils/UtilityFunctions";
 
 const Product = (params) => {
 	let {
@@ -75,6 +75,7 @@ const Product = (params) => {
 	const [productInCart, setProductInCart] = useState(false);
 	const [productQuantity, setProductQuantity] = useState(0);
 	const [cartItem, setCartItem] = useState(null);
+	// const debouncedDispatch = debounce(dispatch, 100)
 
 	// Event Listeners
 	const handleAddClick = async (e, id) => {
@@ -128,7 +129,7 @@ const Product = (params) => {
 			).unwrap();
 			// notifySuccess("Item updated ✔");
 		}
-		dispatch(fetchCartItems()).unwrap();
+		dispatch(fetchCartItems());
 	};
 
 	useEffect(() => {

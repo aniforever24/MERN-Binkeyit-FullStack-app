@@ -20,7 +20,7 @@ router.put('/upload-avatar', upload.single('avatar'), multerErrMW, uploadAvatarC
 router.put('/update-user-details',userDetailsValidationMW , updateUserDetailsController)
 router.get('/send-verification-email', sendVerificationEmailController)
 router.put('/logout', logoutController)
-router.get('/user-details', userDetailsController)
+router.post('/user-details', userDetailsController)
 router.post('/upload-image', upload.single('image'), multerErrMW, uploadImageController)
 
 

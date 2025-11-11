@@ -3,6 +3,9 @@ import { genericServerErr } from '../utlis/genericServerErr.js'
 import User from '../models/database models/UserModel.js'
 import { setCookieOptions } from '../utlis/utilities.js'
 import { generateAccesssToken, generateRefreshToken } from '../utlis/generateTokens.js'
+import runOnceCartSync from '../utlis/runOnceScript.js'
+
+
 
 const loginController = async (req, res) => {
     try {
@@ -32,6 +35,8 @@ const loginController = async (req, res) => {
         res.cookie('accessToken', accessToken, setCookieOptions(30));
 
         res.json({ success: true, message: "Login successful!", data: { refreshToken, accessToken, user: updatedUser } })
+
+        runOnceCartSync(user._id);
 
     } catch (error) {
         console.log(error);

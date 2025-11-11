@@ -1,4 +1,5 @@
 import CartProduct from "../models/database models/CartProductsModel.js"
+import User from "../models/database models/UserModel.js"
 import { genericServerErr } from "../utlis/genericServerErr.js"
 
 export const addToCartController = async (req, res) => {
@@ -9,7 +10,8 @@ export const addToCartController = async (req, res) => {
         if (!productId) {
             return res.status(400).json({ success: false, message: "Product id required", error: "No Product id received" })
         }
-        // return console.log("productId:", productId)
+
+
         // Check if product already exists in the cart
         const checkCartExists = await CartProduct.findOne({
             user: userId,
@@ -27,10 +29,12 @@ export const addToCartController = async (req, res) => {
         })
         const saved = (await (await newCartItem.save()).populate('product'))
 
+        const userUpdateResult = await User.updateOne({ _id: userId }, { $addToSet: { shoppingCart: saved } })
+
         return res.status(201).json({
             success: true,
             message: "Item added successfully.",
-            data: saved
+            data: saved,
         })
     } catch (error) {
         console.log('error in addToCartController: ', error)
@@ -72,7 +76,7 @@ export const updateCartItemController = async (req, res) => {
                 error: "Wrong quanity (< 0)"
             })
         }
-        if(!quantity) {
+        if (!quantity) {
             return res.status(400).json({
                 success: false,
                 message: "quantity can not be zero or null",
@@ -84,7 +88,7 @@ export const updateCartItemController = async (req, res) => {
         const update = await CartProduct.updateOne({ _id: id }, {
             ...(quantity > 0 && { quantity })
         })
-        
+
         res.status(200).json({
             success: true,
             message: "Cart quantity updated successfully",
@@ -99,10 +103,11 @@ export const updateCartItemController = async (req, res) => {
 
 export const deleteCartItemController = async (req, res) => {
     try {
-        const {id} = req.body
-        console.log('delet cart --  id:', id)
-        
-        if(!id) {
+        const userId = req.id
+        const { id } = req.body
+        // console.log('delet cart --  id:', id)
+
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "No cart id received to delete",
@@ -110,7 +115,9 @@ export const deleteCartItemController = async (req, res) => {
             })
         }
 
-        const del = await CartProduct.deleteOne({_id: id})
+        const del = await CartProduct.deleteOne({ _id: id })
+
+        const userUpdateResult = await User.updateOne({ _id: userId }, { $pull: { shoppingCart: id } })
 
         res.status(200).json({
             success: true,
@@ -118,7 +125,7 @@ export const deleteCartItemController = async (req, res) => {
             data: del
         })
 
-    } catch (error) {   
+    } catch (error) {
         // console.log('Error from delete cart:', error)
         genericServerErr(res, error)
     }
