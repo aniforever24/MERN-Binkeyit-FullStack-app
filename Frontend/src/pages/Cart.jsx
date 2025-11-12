@@ -19,6 +19,7 @@ import {
 } from "../redux/cart/cartSlice";
 import emptyCart from "../assets/img/empty_cart.webp";
 import { twMerge } from "tailwind-merge";
+import { Link } from "react-router-dom";
 
 const Cart = () => {
 	const dispatch = useDispatch();
@@ -313,9 +314,9 @@ const Cart = () => {
 						</span>
 					</div>
 
-					<button className="bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white p-2.5 my-2 mb-0 mt-4 cursor-pointer ">
+					<Link to="/checkout" className="bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white p-2.5 my-2 mb-0 mt-4 cursor-pointer ">
 						Checkout
-					</button>
+					</Link>
 				</div>
 			</div>
 		</section>
