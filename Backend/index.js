@@ -18,6 +18,7 @@ import authProductsRoute from './routes/authProductsRoute.js';
 import productsRouter from './routes/productsRoute.js'
 import categoryRouter from './routes/categoryRoute.js'
 import cartRouter from './routes/authCartRoute.js'
+import addressRouter from './routes/authAddressRoute.js'
 
 
 const app = express();
@@ -37,6 +38,7 @@ app.use(cors({
     origin: `${process.env.FRONTEND_BASEURI}`,
     credentials: true,
 }))
+
 // helmet configuration
 app.use(helmet({
     contentSecurityPolicy: {
@@ -53,6 +55,7 @@ morgan.token('timestamp', () => new Date().toLocaleString('en-IN', { timeZone: "
 
 const morganFormat = ':remote-addr - :remote-user [:timestamp] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
 let dbError;
+
 // database connection
 try {
     await connectDB();
@@ -75,6 +78,7 @@ app.use('/auth/products', authProductsRoute)
 app.use('/api/products', productsRouter)
 app.use('/api/category', categoryRouter)
 app.use('/auth/cart', cartRouter)
+app.use('/auth/user/address', addressRouter)
 
 app.get('/testing', (req, res)=> res.send("Backend is working."))
 app.post('/auth/refresh-token', refreshAccessTokenMW, refreshTokenErrMW ,refreshAccessTokenController)
