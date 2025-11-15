@@ -1,4 +1,5 @@
 import Address from "../models/database models/AddressModel.js"
+import User from "../models/database models/UserModel.js"
 import { genericServerErr } from "../utlis/genericServerErr.js"
 
 export const getAddressController = async (req, res) => {
@@ -38,8 +39,11 @@ export const addAddressController = async (req, res) => {
             };
         };
 
+        // Save address to address collection and User addressDetails
         const payload = { userId, addressLine, city, state, pincode, country, mobile }
         const saved = await Address(payload).save()
+
+        await User.updateOne({_id: userId}, { $addToSet: {addressDetails: saved }})
 
         return res.status(201).json({
             success: true,
@@ -66,8 +70,10 @@ export const deleteAddressController = async (req, res) => {
             })
         }
 
+        // Delete address from address collection as well as user collection
         const deleteResult = await Address.deleteOne({ userId, _id: id });
-
+        await User.updateOne({ _id: userId}, { $pull: { addressDetails: id } })
+        
         if (deleteResult.deletedCount == 0) {
             return res.status(404).json({
                 success: false,

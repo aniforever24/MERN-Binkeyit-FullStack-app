@@ -22,18 +22,31 @@ const addressSchema = new Schema({
         required: [true, 'state is required']
     },
     pincode: { 
-        type: Number,
+        type: String,
         default: "",
-        required: [true, 'pincode is required']
+        required: [true, "Pincode is required"],
+        validate: {
+            validator: (v)=> /^\d+$/.test(v),
+            message: "pincode must contain only numbers!"
+        }
     },
     country: { 
         type: String,
         default: "",
-        required: [true, 'country is required']
+        required: [true, 'country is required']        
     },
     mobile: { 
-        type: Number,
-        default: ""
+        type: String,
+        default: "",
+        required: false,
+        validate: {
+            validator: (v)=> {
+                // Allow skipping mobile number
+                if(!v || !v.trim()) return true;
+                return (/^\d+$/.test(v) && v.length >= 10);
+            },
+            message: "Please input valid mobile number (min 10 digits)"
+        }
     },
 }, { timestamps: true })
 

@@ -34,9 +34,18 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
-    mobile: {
-        type: Number,
-        default: null
+    mobile: { 
+        type: String,
+        default: null,
+        required: false,
+        validate: {
+            validator: (v)=> {
+                // Allow skipping mobile number
+                if(!v || !v.trim()) return true;
+                return (/^\d+$/.test(v) && v.length >= 10);
+            },
+            message: "Please input valid mobile number (min 10 digits)"
+        }
     },
     mobileVerifed: {
         type: Boolean,
