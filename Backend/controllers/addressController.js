@@ -4,10 +4,10 @@ import { genericServerErr } from "../utlis/genericServerErr.js"
 
 export const getAddressController = async (req, res) => {
     try {
-        const userId = req.id
+        const userId = req.id     // Get it from auth middleware
 
         // fetch address count of addresses from db
-        const [addresses, count] = await Promise.all([Address.find({ userId }), Address.find({ userId }).countDocuments()])
+        const [addresses, count] = await Promise.all([Address.find({ userId }).sort({ createdAt: -1 }), Address.find({ userId }).countDocuments()])
 
         return res.status(200).json({
             success: true,
@@ -43,7 +43,7 @@ export const addAddressController = async (req, res) => {
         const payload = { userId, addressLine, city, state, pincode, country, mobile }
         const saved = await Address(payload).save()
 
-        await User.updateOne({_id: userId}, { $addToSet: {addressDetails: saved }})
+        await User.updateOne({ _id: userId }, { $addToSet: { addressDetails: saved } })
 
         return res.status(201).json({
             success: true,
@@ -56,24 +56,74 @@ export const addAddressController = async (req, res) => {
     }
 }
 
+// Currently only updating 'default' status of the address
+export const updateAddressController = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { isDefault = false, id } = req.body;     // address id
+
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                error: "Address id empty!",
+                message: "Address id is required"
+            })
+        };
+
+        // Check and update address default status
+        const updatedAddress = await Address.findOneAndUpdate({ userId, _id: id }, { isDefault: isDefault }, { new: true }).sort({ createdAt: -1 });
+        
+        if (!updatedAddress) {
+            return res.status(400).json({
+                success: false,
+                error: "Address not found",
+                message: "Address not found"
+            })
+        };
+
+        // Update other addresses' "isDefault" status
+        const result = await Address.updateMany({ userId, _id: { $ne: id } }, { isDefault: false })
+
+        return res.status(200).json({
+            success: true,
+            message: "Default address updated successfully.",
+            data: updatedAddress
+        })
+
+    } catch (error) {
+        return genericServerErr(res, error);
+    }
+}
+
 export const deleteAddressController = async (req, res) => {
     try {
-        const userId = req.id
-        const { id } = req.body   // address id
-
+        const userId = req.id;
+        const { id } = req.body;   // address id
+        
         // Validation
-        if(!id) {
-            res.status(400).json({
+        if (!id) {
+            return res.status(400).json({
                 success: false,
                 error: "No address id received!",
                 message: "No address id received to delete!"
             })
-        }
+        };
+
+        const addressCount = await Address.find({ userId }).countDocuments();
+
+        if (addressCount == 1) {
+            return res.status(400).json({
+                success: false,
+                error: "Cannot delete all the addresses. Only 1 address found",
+                message: "Cannot delete all the addresses. Only 1 address found"
+            })
+        };
 
         // Delete address from address collection as well as user collection
         const deleteResult = await Address.deleteOne({ userId, _id: id });
-        await User.updateOne({ _id: userId}, { $pull: { addressDetails: id } })
-        
+        await User.updateOne({ _id: userId }, { $pull: { addressDetails: id } })
+
         if (deleteResult.deletedCount == 0) {
             return res.status(404).json({
                 success: false,
@@ -85,9 +135,7 @@ export const deleteAddressController = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Address deleted successfully."
-        })
-
-
+        });
 
     } catch (error) {
         return genericServerErr(res, error)
