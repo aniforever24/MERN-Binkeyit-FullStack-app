@@ -4,6 +4,7 @@ import reloadReducer from './reload/reloadSlice';
 import categoryReducer from './category/categorySlice';
 import productReducer from './products/productSlice';
 import cartReducer from './cart/cartSlice';
+import addressReducer from './address/addressSlice'
 
 export const store = configureStore({
     reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
         category: categoryReducer,
         product: productReducer,
         cart: cartReducer,
+        address: addressReducer,
     },
 })

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 // Capitalise first letter of any string 
 export const capitalizeFirstLetter = (str) => {
     let newName = str.trimStart();
