@@ -48,6 +48,10 @@ const addressSchema = new Schema({
             message: "Please input valid mobile number (min 10 digits)"
         }
     },
+    isDefault: {
+        type: Boolean,
+        default: false,
+    }
 }, { timestamps: true })
 
 const Address = mongoose.model('Address', addressSchema);
