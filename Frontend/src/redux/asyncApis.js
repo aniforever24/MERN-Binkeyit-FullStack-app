@@ -76,7 +76,7 @@ export const fetchAddressAPI = async (_, thunkApi) => {
         const { data: responseData } = await authAxiosInstance({
             ...SummaryApi.fetchAddress,
         });
-        
+
         return responseData.data
 
     } catch (error) {
@@ -107,11 +107,11 @@ export const addAddressAPI = async ({ addressLine, city, state, pincode, country
     }
 }
 
-export const deleteAddressAPI = async ({ id } = {}, thunkApi) => {
+export const deleteAddressAPI = async ({ id, force = false } = {}, thunkApi) => {
     try {
         const { data: responseData } = await authAxiosInstance({
             ...SummaryApi.updateAddress,
-            data: { id }
+            data: { id, force }
         });
 
         return responseData.data
