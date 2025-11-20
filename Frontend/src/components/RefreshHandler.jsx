@@ -13,6 +13,7 @@ import { useLocation, useNavigate } from "react-router";
 import { GlobalContext } from "../context/context";
 import axiosErrorMsg from "../utils/axiosError";
 import { notifyError } from "../utils/foxToast";
+import { fetchAddress } from "../redux/address/addressSlice";
 
 const RefreshHandler = () => {
 	const navigate = useNavigate();
@@ -39,7 +40,7 @@ const RefreshHandler = () => {
 		) {
 			fetchUserDetails()
 				.then((data) => {
-					console.log("user details", data);
+					// console.log("user details", data);
 					const accessToken = data?.accessToken;
 					if (accessToken) localStorage.setItem("accessToken", accessToken);
 
@@ -61,6 +62,7 @@ const RefreshHandler = () => {
 						navigate("/error", {replace: true});
 					}
 				});
+			dispatch(fetchAddress())
 			// if (!stopRef.current) {
 			// 	dispatch(fetchCartItems()).unwrap();
 			// }

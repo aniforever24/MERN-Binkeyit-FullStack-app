@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 // Capitalise first letter of any string 
 export const capitalizeFirstLetter = (str) => {
     let newName = str.trimStart();
-    let n = newName.toUpperCase().trimStart();
+    let n = newName.toUpperCase();
     newName = newName.replace(newName[0], n[0])
     return newName;
 }
@@ -138,7 +138,7 @@ export const calculateDiscountedPrice = (price, dis) => {
     return Number(discountedPrice.toFixed(2));
 };
 
-// Debounce function to delay api call (or any function)
+// Debounce function to delay (ms) api call (or any function)
 export const debounce = (api, delay) => {
     if (!(typeof api === 'function')) {
         throw Error("1st parameter must be a function!")
