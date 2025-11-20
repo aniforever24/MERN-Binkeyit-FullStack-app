@@ -38,9 +38,15 @@ export const addAddressController = async (req, res) => {
                 });
             };
         };
+        // Check if this address is the first address user added
+        const count = await Address.find({ userId }).countDocuments()
+        let isDefault = false
+        if(count === 0) {
+            isDefault = true
+        }
 
         // Save address to address collection and User addressDetails
-        const payload = { userId, addressLine, city, state, pincode, country, mobile }
+        const payload = { userId, addressLine, city, state, pincode, country, mobile, isDefault }
         const saved = await Address(payload).save()
 
         await User.updateOne({ _id: userId }, { $addToSet: { addressDetails: saved } })
@@ -73,7 +79,7 @@ export const updateAddressController = async (req, res) => {
 
         // Check and update address default status
         const updatedAddress = await Address.findOneAndUpdate({ userId, _id: id }, { isDefault: isDefault }, { new: true }).sort({ createdAt: -1 });
-        
+
         if (!updatedAddress) {
             return res.status(400).json({
                 success: false,
@@ -99,8 +105,8 @@ export const updateAddressController = async (req, res) => {
 export const deleteAddressController = async (req, res) => {
     try {
         const userId = req.id;
-        const { id } = req.body;   // address id
-        
+        const { id, force = false } = req.body;   // address id
+
         // Validation
         if (!id) {
             return res.status(400).json({
@@ -112,7 +118,7 @@ export const deleteAddressController = async (req, res) => {
 
         const addressCount = await Address.find({ userId }).countDocuments();
 
-        if (addressCount == 1) {
+        if (addressCount == 1 && !force) {
             return res.status(400).json({
                 success: false,
                 error: "Cannot delete all the addresses. Only 1 address found",
