@@ -3,8 +3,8 @@ import { createPortal } from "react-dom";
 import { RxCross2 } from "react-icons/rx";
 import { motion } from "motion/react";
 
-// Create this context to make all the props available to Popup component
-// to its children 
+// Create this context to make all the props (currently only passing close function)
+// available to Popup component to its children 
 export const PopupContext = createContext(()=> {});
 
 const Popup = ({ children, close }) => {
