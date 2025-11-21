@@ -40,7 +40,7 @@ const AddAddress = () => {
 
 	return (
 		<div className="sm:p-6 p-4 max-sm:px-6">
-			<form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-3">
+			<div className="space-y-3">
 				<div className="flex flex-col gap-1">
 					<label
 						htmlFor="addressLine"
@@ -138,21 +138,20 @@ const AddAddress = () => {
 
 				{status.addAddress === "pending" ? (
 					<button
-						type="submit"
 						className="block w-full font-medium text-center  text-white bg-green-500 hover:bg-green-400 cursor-pointer sm:p-2 p-1 rounded-md mt-6"
 					>
 						<Spinner borderClr={"text-green-500"} customClass="min-w-6 min-h-6" customClassTrack="min-w-6 min-h-6" />
 					</button>
 				) : (
 					<button
-						type="submit"
 						className="block w-full font-medium text-center  text-white bg-green-500 hover:bg-green-400 not-disabled:active:bg-green-600
 						cursor-pointer sm:p-2 p-1 rounded-md mt-6"
+						onClick={handleSubmit(onSubmit, onError)}
 					>
 						Save Address
 					</button>
 				)}
-			</form>
+			</div>
 		</div>
 	);
 };
