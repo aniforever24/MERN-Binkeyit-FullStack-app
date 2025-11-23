@@ -66,7 +66,11 @@ const Cart = () => {
 										{product.discount}% Off
 									</span>
 								</div>
-								<Tooltip text="Remove" tooltipStyle="bg-red-600/75" tooltipStyleInvisible="bg-red-600">
+								<Tooltip
+									text="Remove"
+									tooltipStyle="bg-red-600/75"
+									tooltipStyleInvisible="bg-red-600"
+								>
 									<button
 										// title="Remove"
 										className="block text-red-500 cursor-pointer max-md:text-sm hover:text-red-600 active:scale-90 active:shadow w-fit"
@@ -198,7 +202,11 @@ const Cart = () => {
 			const extraCharges = Object.values(otherCharges).reduce((acc, c) => {
 				return acc + c;
 			}, 0);
-			setFinalCartValue(totalValue + extraCharges);
+			if (totalValue >= 500) {
+				setFinalCartValue(totalValue);
+			} else {
+				setFinalCartValue(totalValue + extraCharges);
+			}
 		}
 	}, [cartItems, otherCharges]);
 
@@ -303,9 +311,7 @@ const Cart = () => {
 
 					<div className="flex justify-between items-center font-semibold text-blue-500">
 						<span className="[word-spacing:2px]">Total Items</span>
-						<span className="font-nunito">
-							{totalItems}
-						</span>
+						<span className="font-nunito">{totalItems}</span>
 					</div>
 					<div className="flex justify-between items-center font-bold">
 						<span>Total Cost</span>
@@ -314,7 +320,10 @@ const Cart = () => {
 						</span>
 					</div>
 
-					<Link to="/checkout" className="bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white p-2.5 my-2 mb-0 mt-4 cursor-pointer ">
+					<Link
+						to="/checkout"
+						className="bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white p-2.5 my-2 mb-0 mt-4 cursor-pointer text-center"
+					>
 						Checkout
 					</Link>
 				</div>
