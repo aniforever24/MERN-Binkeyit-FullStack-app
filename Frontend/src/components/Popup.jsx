@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 // available to Popup component to its children 
 export const PopupContext = createContext(()=> {});
 
-const Popup = ({ children, close }) => {
+const Popup = ({ children, close, props = {} }) => {
 	const handleClose = (e) => {
 		close();
 	};
@@ -26,7 +26,7 @@ const Popup = ({ children, close }) => {
 	}, []);
 
 	return createPortal(
-		<PopupContext value={{close} }>
+		<PopupContext.Provider value={{close, props} }>
 			<div className="_popup fixed w-full h-full top-0 bottom-0 left-0 right-0 flex justify-center items-center bg-neutral-700/75 select-none z-50">
 				<motion.div
 					initial={{ opacity: 0, y: 50 }}
@@ -56,7 +56,7 @@ const Popup = ({ children, close }) => {
 					/>
 				</motion.div>
 			</div>
-		</PopupContext>,
+		</PopupContext.Provider>,
 		document.body
 	);
 };
