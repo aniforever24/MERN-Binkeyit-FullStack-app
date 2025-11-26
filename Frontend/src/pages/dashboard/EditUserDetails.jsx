@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { FaCheck, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import Divider from "../../components/Divider";
@@ -7,12 +7,19 @@ import authAxiosInstance from "../../config/authAxiosConfig";
 import axiosErrorMsg from "../../utils/axiosError";
 import SummaryApi from "../../Common/SummaryApi";
 import { notifySuccess } from "../../utils/foxToast";
+import Addresses from "../../components/Addresses";
+import { setCustomDefaultAddress } from "../../redux/address/addressSlice";
 
 const EditUserDetails = ({ disabled, btnText, link, heading }) => {
-	// Address is not included in actual updation yet
-
 	const location = useLocation();
 	const user = useSelector((state) => state.user.userDetails);
+	const {addresses, defaultAddress, customDefaultAddress} = useSelector((state) => state.address);	
+
+	const [data, setData] = useState([])
+	const [defaultAddressText, setDefaultAddressText] = useState("");
+	const [showMoreBtn, seShowMoreBtn] = useState(true);
+	const [showMoreInPopup, setShowMoreInPopup] = useState(true);
+
 	const [showPwd, setShowPwd] = useState(false);
 	const [addr, setAddr] = useState({
 		addressLine1: "",
@@ -23,13 +30,14 @@ const EditUserDetails = ({ disabled, btnText, link, heading }) => {
 		email: "",
 		mobile: "",
 		password: "",
-		address: "",
 	});
 	const [title, setTitle] = useState(heading);
 	const [emailVerified, setEmailVerified] = useState(false);
-	const timeoutRef = useRef()
+
+	const timeoutRef = useRef();
 
 	if (!btnText) btnText = "Save";
+	const customStyles = { customStyleDefaultAddress: "border-none p-0" };
 
 	const getLocaleDate = (d) => {
 		let localeDt;
@@ -87,39 +95,64 @@ const EditUserDetails = ({ disabled, btnText, link, heading }) => {
 			email: "",
 			mobile: "",
 			password: "",
-			address: "",
 		});
-		timeoutRef.current = setTimeout(()=> window.location.reload(), 3000)
+		timeoutRef.current = setTimeout(() => window.location.reload(), 3000);
 	};
 
 	const handleVerifyEmail = async (e) => {
 		try {
 			const response = await authAxiosInstance({
-				...SummaryApi.verify_email
+				...SummaryApi.verify_email,
 			});
-			console.log('response: ', response)
-			const {data} = response
-			if(response.status === 200) {
-				notifySuccess(data?.message || "Verification email sent successfully to your new email!")
+			console.log("response: ", response);
+			const { data } = response;
+			if (response.status === 200) {
+				notifySuccess(
+					data?.message || "Verification email sent successfully to your new email!"
+				);
 			}
-
 		} catch (error) {
-			return axiosErrorMsg(error)
+			return axiosErrorMsg(error);
 		}
 	};
-
+	
 	useEffect(() => {
 		if (location.pathname === "/user/dashboard/edit-details")
 			setTitle("Edit Personal Details");
 
-		()=> {
-			if(timeoutRef.current) clearTimeout(timeoutRef.current)
-		}
+		() => {
+			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+		};
 	}, []);
-
 	useEffect(()=> {
-		setEmailVerified(()=> user?.emailVerified || false)
-	}, [user?.emailVerified])
+		if(addresses[0]) {
+			const d = addresses.filter((adr)=> defaultAddress._id != adr._id)
+			const defaultAdr = addresses.filter((adr)=> defaultAddress._id == adr._id)[0]
+			setData((prev)=> {
+				const newData = [...d]
+				newData.unshift(defaultAdr)
+				return newData
+			})
+		}
+	}, [addresses])
+	useEffect(() => {
+		if (data[0]) {
+			if (defaultAddress) {
+				const { addressLine, city, pincode, state, country, mobile } =
+					defaultAddress;
+				setDefaultAddressText((prev) => {
+					const adr = `${addressLine}, ${city} - ${pincode}, ${state}, ${country}`;
+					const m = mobile ? `, Ph-${mobile}` : "";
+
+					return adr + m;
+				});
+			}
+		}
+	}, [data]);
+
+	useEffect(() => {
+		setEmailVerified(() => user?.emailVerified || false);
+	}, [user?.emailVerified]);
 
 	useEffect(() => {
 		const adr = Object.values(addr).join(" ");
@@ -224,7 +257,7 @@ const EditUserDetails = ({ disabled, btnText, link, heading }) => {
 						name="mobile"
 						id="mobile"
 						placeholder={user?.mobile ? user.mobile : "mobile"}
-						value={form?.mobile && form.mobile }
+						value={form?.mobile && form.mobile}
 						disabled={disabled ? true : false}
 					/>
 					{/* <MdClose size={25} className="text-red-600" title="not verified" /> */}
@@ -271,35 +304,39 @@ const EditUserDetails = ({ disabled, btnText, link, heading }) => {
 					)}
 				</div>
 
-				<div className="address flex sm:gap-4 gap-1 ">
+				<div className="_address flex sm:gap-4 gap-1 ">
 					<label
 						className="font-semibold min-w-[80px] md:min-w-[130px] select-none"
-						htmlFor="address_line1"
+						htmlFor="defaultAddress"
 					>
 						Address:
 					</label>
-					<div className="grid w-full gap-2">
+					{disabled ? (
 						<input
 							className="border border-amber-200 px-2 py-1.5 grow-[1] rounded-md focus:outline-none focus:border-amber-400 focus:bg-blue-200 w-full disabled:text-gray-500 disabled:cursor-not-allowed placeholder:text-neutral-500 focus:placeholder:text-neutral-500/20"
 							onChange={handleChangeAddress}
 							type="text"
-							name="addressLine1"
-							id="address_line1"
+							name="defaultAddress"
+							id="defaultAddress"
 							placeholder="address line 1"
-							value={addr.addressLine1}
+							value={defaultAddressText}
 							disabled={disabled ? true : false}
+							title={defaultAddressText}
 						/>
-						<input
-							className="border border-amber-200 px-2 py-1.5 grow-[1] rounded-md focus:outline-none focus:border-amber-400 focus:bg-blue-200 w-full disabled:text-gray-500 disabled:cursor-not-allowed placeholder:text-neutral-500 focus:placeholder:text-neutral-500/20"
-							onChange={handleChangeAddress}
-							type="text"
-							name="addressLine2"
-							id="address_line2"
-							placeholder="address line 2"
-							value={addr?.addressLine2}
-							disabled={disabled ? true : false}
+					) : (
+						<div className="border border-amber-200 px-2 py-1.5 w-full flex flex-col items-start">
+						<Addresses
+							data={data}
+							defaultAddress={defaultAddress}
+							showMoreBtn={showMoreBtn}
+							setShowMoreBtn={seShowMoreBtn}
+							showMoreInPopup={showMoreInPopup}
+							setShowMoreInPopup={setShowMoreInPopup}
+							showDeleteOption = {true}
+							customStyles={customStyles}
 						/>
-					</div>
+						</div>
+					)}
 				</div>
 
 				<div className="_status flex sm:gap-4 gap-1 items-center">
@@ -324,6 +361,7 @@ const EditUserDetails = ({ disabled, btnText, link, heading }) => {
 				</div>
 				{!link ? (
 					<button
+						type="submit"
 						className="block mx-auto bg-green-100 font-semibold cursor-pointer rounded-xl p-1 px-2 hover:bg-green-500 text-green-600 hover:text-white border-green-600 border mb-4 min-w-20 w-full disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-400"
 						disabled={!Object.values(form).some((v) => v.trim() !== "")}
 					>
@@ -342,4 +380,4 @@ const EditUserDetails = ({ disabled, btnText, link, heading }) => {
 	);
 };
 
-export default EditUserDetails;
+export default memo(EditUserDetails);

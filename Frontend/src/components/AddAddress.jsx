@@ -9,12 +9,12 @@ import { addAddress, fetchAddress } from "../redux/address/addressSlice";
 import Spinner from "./Spinner";
 import { PopupContext } from "./Popup";
 
-const AddAddress = () => {
-	const {close} = useContext(PopupContext)
+const AddAddress = ({ setShowMoreBtn, showMoreInPopup }) => {
+	const { close } = useContext(PopupContext);
 	const dispatch = useDispatch();
 	const status = useSelector((state) => state.address.status);
-	
-	const debouncedClose = debounce(close, 250)
+
+	const debouncedClose = debounce(close, 250);
 
 	const {
 		register,
@@ -24,9 +24,10 @@ const AddAddress = () => {
 	} = useForm();
 
 	const onSubmit = async (data) => {
-			await dispatch(addAddress(data)).unwrap();
-			dispatch(fetchAddress())
-			debouncedClose()
+		await dispatch(addAddress(data)).unwrap();
+		dispatch(fetchAddress());
+		debouncedClose();
+		if (!showMoreInPopup) setShowMoreBtn(false);
 	};
 	const onError = (error) => {
 		const err = Object.entries(error);
@@ -137,10 +138,12 @@ const AddAddress = () => {
 				</div>
 
 				{status.addAddress === "pending" ? (
-					<button
-						className="block w-full font-medium text-center  text-white bg-green-500 hover:bg-green-400 cursor-pointer sm:p-2 p-1 rounded-md mt-6"
-					>
-						<Spinner borderClr={"text-green-500"} customClass="min-w-6 min-h-6" customClassTrack="min-w-6 min-h-6" />
+					<button className="block w-full font-medium text-center  text-white bg-green-500 hover:bg-green-400 cursor-pointer sm:p-2 p-1 rounded-md mt-6">
+						<Spinner
+							borderClr={"text-green-500"}
+							customClass="min-w-6 min-h-6"
+							customClassTrack="min-w-6 min-h-6"
+						/>
 					</button>
 				) : (
 					<button
