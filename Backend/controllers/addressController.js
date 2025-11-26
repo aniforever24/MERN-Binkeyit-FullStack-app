@@ -41,7 +41,7 @@ export const addAddressController = async (req, res) => {
         // Check if this address is the first address user added
         const count = await Address.find({ userId }).countDocuments()
         let isDefault = false
-        if(count === 0) {
+        if (count === 0) {
             isDefault = true
         }
 
@@ -77,8 +77,20 @@ export const updateAddressController = async (req, res) => {
             })
         };
 
-        // Check and update address default status
-        const updatedAddress = await Address.findOneAndUpdate({ userId, _id: id }, { isDefault: isDefault }, { new: true }).sort({ createdAt: -1 });
+        // Prevent getting default address updated
+        const isDefaultAddress = await Address.findOne({ _id: id, isDefault: true })
+        if(isDefaultAddress) {
+            return res.status(400).json({
+                success: false,
+                error: "Direct updation of default address prohibited",
+                message: "Cannot update default address directly."
+            })
+        }
+
+        // Update address default status
+        const updatedAddress = await Address.findOneAndUpdate({ userId, _id: id, isDefault: { $ne: true } },
+            { isDefault: isDefault },
+            { new: true }).sort({ createdAt: -1 });
 
         if (!updatedAddress) {
             return res.status(400).json({
@@ -116,13 +128,25 @@ export const deleteAddressController = async (req, res) => {
             })
         };
 
-        const addressCount = await Address.find({ userId }).countDocuments();
+        const allAddresses = await Address.find({ userId }).lean();    // get all user addresses
 
+        // Do not delete only address left
+        const addressCount = allAddresses?.length;
         if (addressCount == 1 && !force) {
             return res.status(400).json({
                 success: false,
                 error: "Cannot delete all the addresses. Only 1 address found",
                 message: "Cannot delete all the addresses. Only 1 address found"
+            })
+        };
+
+        // Do not delete default address
+        const defaultAddress = allAddresses.filter((adr) => adr?.isDefault)[0]
+        if ((defaultAddress._id.toString() === id) && !force) {
+            return res.status(400).json({
+                success: false,
+                error: "Default address cannot be deleted",
+                message: "Default address cannot be deleted. Please choose other default address first."
             })
         };
 
