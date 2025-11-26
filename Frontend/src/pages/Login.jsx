@@ -10,6 +10,7 @@ import { Navigate, useNavigate } from "react-router";
 import axiosErrorMsg from "../utils/axiosError";
 import { fetchCartItems } from "../redux/cart/cartSlice";
 import { GlobalContext } from "../context/context";
+import { fetchAddress } from "../redux/address/addressSlice";
 
 const Login = () => {
 	if (
@@ -66,6 +67,7 @@ const Login = () => {
 			}
 			dispatch(setUserDetails({ ...responseData.data.user, ...(!db_avatar && { avatar }) }));
 			dispatch(fetchCartItems())
+			dispatch(fetchAddress())
 			setIsUserLoggedIn(true)
 			// dispatch(setUserDetails(responseData.data.user));
 		} catch (error) {

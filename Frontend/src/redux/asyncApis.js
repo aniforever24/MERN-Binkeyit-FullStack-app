@@ -63,6 +63,7 @@ export const deleteCartItemAPI = async ({ id } = {}, thunkApi) => {
         });
         const { data: responseData } = response;
         // console.log('response from delete cart:', responseData)
+        return "Data deleted successfully"
 
     } catch (error) {
         const msg = error?.response?.data?.message || error?.message || "Failed to delete cart item"
@@ -76,7 +77,7 @@ export const fetchAddressAPI = async (_, thunkApi) => {
         const { data: responseData } = await authAxiosInstance({
             ...SummaryApi.fetchAddress,
         });
-
+        // console.log('fetchAddressAPI runs')
         return responseData.data
 
     } catch (error) {
@@ -110,7 +111,7 @@ export const addAddressAPI = async ({ addressLine, city, state, pincode, country
 export const deleteAddressAPI = async ({ id, force = false } = {}, thunkApi) => {
     try {
         const { data: responseData } = await authAxiosInstance({
-            ...SummaryApi.updateAddress,
+            ...SummaryApi.deleteAddress,
             data: { id, force }
         });
 
@@ -129,7 +130,7 @@ export const updateAddressAPI = async ( { isDefault = false, id } = {}, thunkApi
             data: {isDefault, id}
         });
         
-        return responseData.data;
+        return responseData
 
     } catch (error) {
         const message = error?.responde?.data?.message || error?.message;
