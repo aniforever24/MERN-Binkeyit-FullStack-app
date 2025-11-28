@@ -1,7 +1,7 @@
 import React, { useEffect, useState, memo } from "react";
 import Popup from "./Popup";
 import AddAddress from "./AddAddress";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useDispatch, useSelector } from "react-redux";
 import {
 	fetchAddress,
@@ -119,31 +119,33 @@ const Addresses = ({
 			)}
 
 			{/* Show Addresses in popup mode */}
-			{showMoreInPopup && !showMoreBtn && data.length > 1 && (
-				<Popup
-					close={() => {
-						// setShowMoreInPopup(false);
-						setShowMoreBtn(true);
-					}}
-				>
-					<div className="p-4 sm:px-6 px-4 overflow-y-auto max-h-[80vh]">
-						<h3 className="text-amber-600 text-center font-semibold py-2 mb-4 text-lg border border-amber-200 rounded bg-amber-50">
-							Choose Default Address
-						</h3>
-						<ShowMoreAddresses
-							data={data}
-							showMoreBtn={showMoreBtn}
-							showMoreInPopup={showMoreInPopup}
-							handleChange={handleChange}
-							showMoreInPopupHeading={showMoreInPopupHeading}
-							showDeleteOption={showDeleteOption}
-							setPreventShowMoreBtnRender={setPreventShowMoreBtnRender}
-						/>
-					</div>
-				</Popup>
-			)}
+			<AnimatePresence>
+				{showMoreInPopup && !showMoreBtn && data.length > 1 && (
+					<Popup
+						close={() => {
+							// setShowMoreInPopup(false);
+							setShowMoreBtn(true);
+						}}
+					>
+						<motion.div className="p-4 sm:px-6 px-4 overflow-y-auto max-h-[80vh]">
+							<h3 className="text-amber-600 text-center font-semibold py-2 mb-4 text-lg border border-amber-200 rounded bg-amber-50">
+								Choose Default Address
+							</h3>
+							<ShowMoreAddresses
+								data={data}
+								showMoreBtn={showMoreBtn}
+								showMoreInPopup={showMoreInPopup}
+								handleChange={handleChange}
+								showMoreInPopupHeading={showMoreInPopupHeading}
+								showDeleteOption={showDeleteOption}
+								setPreventShowMoreBtnRender={setPreventShowMoreBtnRender}
+							/>
+						</motion.div>
+					</Popup>
+				)}
+			</AnimatePresence>
 
-			{showMoreInPopup && (!showMoreBtn || (data.length <= 1 )) && (
+			{showMoreInPopup && (!showMoreBtn || data.length <= 1) && (
 				<button
 					type="button"
 					className={twMerge(
@@ -155,7 +157,7 @@ const Addresses = ({
 				</button>
 			)}
 
-			{!showMoreInPopup && (data.length === 0) && (
+			{!showMoreInPopup && data.length === 0 && (
 				<button
 					className="block border border-gray-200 border-dashed sm:text-base text-sm sm:p-3 p-2 mt-2 text-center bg-blue-50 hover:bg-blue-100 text-gray-600 font-medium cursor-pointer active:bg-blue-100 w-full"
 					onClick={handleClickAddAddress}
