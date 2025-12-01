@@ -120,16 +120,16 @@ const SummaryCheckout = () => {
 					<span className="font-nunito">{formatCurrency(finalCartValue, true)}</span>
 				</div>
 
-				<div className="flex justify-between gap-4">
+				<div className="flex justify-between sm:gap-4 gap-0 sm:flex-row flex-col sm:mt-10 mt-5">
 					<Link
 						to="/checkout"
-						className="bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-shadow text-shadow-black font-medium rounded-md p-2.5 my-2 mb-0 sm:mt-15 mt-5 cursor-pointer block w-full text-center"
+						className="bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-shadow text-shadow-black font-medium rounded-md p-2.5 my-2 mb-0 cursor-pointer block w-full text-center"
 					>
 						Cash On Delivery
 					</Link>
 					<Link
 						to="/checkout"
-						className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-shadow text-shadow-black font-medium rounded-md p-2.5 my-2 mb-0 sm:mt-15 mt-5 cursor-pointer block w-full text-center"
+						className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-shadow text-shadow-black font-medium rounded-md p-2.5 my-2 mb-0 cursor-pointer block w-full text-center"
 					>
 						Pay Online
 					</Link>
