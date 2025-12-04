@@ -32,6 +32,7 @@ const Addresses = ({
 	const [preventShowMoreBtnRender, setPreventShowMoreBtnRender] =
 		useState(false);
 	const [showAddAddress, setShowAddAddress] = useState(false);
+	const [index, setIndex] = useState(-1);
 
 	// Event listeners
 	const handleClickShowMore = () => {
@@ -39,9 +40,10 @@ const Addresses = ({
 			setShowMoreBtn(false);
 		}
 	};
-	const handleChange = async (e, id) => {
+	const handleChange = async (e, id, i) => {
+		setIndex(i);
 		const newAdr = allAddresses.filter((adr) => adr._id.toString() === id);
-		dispatch(setCustomDefaultAddress(newAdr[0]));
+		dispatch(setCustomDefaultAddress({ address: newAdr[0], index: i }));
 		if (showDeleteOption) {
 			try {
 				await dispatch(updateAddress({ isDefault: true, id })).unwrap();
@@ -67,17 +69,21 @@ const Addresses = ({
 			});
 		}
 	}, [defaultAddress]);
-
-	useEffect(() => {
-		// console.log("customeDefaultAddress:", customDefaultAddress)
-	}, [customDefaultAddress]);
+	useEffect(()=> {
+		if(customDefaultAddress) {
+			setIndex(customDefaultAddress?.index)
+		}
+	}, [customDefaultAddress])
 
 	return (
 		<>
 			{defaultAddress && (
 				<div
 					className={twMerge(
-						"_defaultAddress sm:text-base text-sm p-2 py-3 space-x-3 border-2 border-gray-100 rounded",
+						"_defaultAddress sm:text-base text-sm p-2 py-3 space-x-3 border-2 border-gray-100 rounded flex items-center",
+						!showMoreInPopup &&
+							index === -1 &&
+							"bg-blue-100 border-1 border-blue-200 rounded-lg shadow-xs",
 						customStyleDefaultAddress
 					)}
 				>
@@ -87,9 +93,14 @@ const Addresses = ({
 						id={`default-address-${defaultAddress?._id?.toString()}`}
 						value={defaultAddressText}
 						defaultChecked
-						onChange={(e) => handleChange(e, defaultAddress?._id?.toString())}
+						onChange={(e) => {
+							handleChange(e, defaultAddress?._id?.toString(), -1);
+						}}
 					/>
-					<label htmlFor={`default-address-${defaultAddress?._id?.toString()}`}>
+					<label
+						htmlFor={`default-address-${defaultAddress?._id?.toString()}`}
+						className="block flex-1 cursor-pointer"
+					>
 						{defaultAddressText}
 					</label>
 				</div>
@@ -115,6 +126,7 @@ const Addresses = ({
 					setShowMoreBtn={setShowMoreBtn}
 					showMoreInPopup={showMoreInPopup}
 					handleChange={handleChange}
+					index={index}
 				/>
 			)}
 

@@ -5,17 +5,20 @@ import { capitalizeFirstLetter, debounce } from "../utils/UtilityFunctions";
 import { useSelector, useDispatch } from "react-redux";
 import authAxiosInstance from "../config/authAxiosConfig";
 import SummaryApi from "../Common/SummaryApi";
-import { addAddress, fetchAddress } from "../redux/address/addressSlice";
+import {
+	addAddress,
+	fetchAddress,
+	setCustomDefaultAddress,
+} from "../redux/address/addressSlice";
 import Spinner from "./Spinner";
 import { PopupContext } from "./Popup";
 
 const AddAddress = ({ setShowMoreBtn, showMoreInPopup }) => {
 	const { close } = useContext(PopupContext);
 	const dispatch = useDispatch();
-	const status = useSelector((state) => state.address.status);
+	const { status, customDefaultAddress } = useSelector((state) => state.address);
 
 	const debouncedClose = debounce(close, 250);
-
 	const {
 		register,
 		handleSubmit,
@@ -25,7 +28,17 @@ const AddAddress = ({ setShowMoreBtn, showMoreInPopup }) => {
 
 	const onSubmit = async (data) => {
 		await dispatch(addAddress(data)).unwrap();
-		dispatch(fetchAddress());
+		dispatch(fetchAddress()).then((_)=> {
+			if (customDefaultAddress && customDefaultAddress?.index !== -1) {
+			dispatch(
+				setCustomDefaultAddress({
+					...customDefaultAddress,
+					index: customDefaultAddress.index + 1,
+				})
+			);
+		}
+		});
+		
 		debouncedClose();
 		if (!showMoreInPopup) setShowMoreBtn(false);
 	};

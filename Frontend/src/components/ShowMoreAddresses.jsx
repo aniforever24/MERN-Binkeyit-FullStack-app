@@ -14,6 +14,7 @@ const ShowMoreAddresses = ({
 	setShowMoreBtn,
 	showMoreInPopup,
 	handleChange,
+	index,
 	showDeleteOption = false,
 }) => {
 	const dispatch = useDispatch();
@@ -62,12 +63,13 @@ const ShowMoreAddresses = ({
 						<div
 							key={"moreAddresses-" + id}
 							className={twMerge(
-								"sm:text-base text-sm p-2 py-3 flex justify-between gap-4 border-2 border-gray-100 rounded"
-							)}
+								"sm:text-base text-sm p-2 py-3 flex justify-between gap-4 border-2 border-gray-100 rounded",
+								!showMoreInPopup && index === i && "bg-blue-100 border-1 border-blue-200 rounded-lg shadow-xs"
+							)}							
 						>
 							<div
 								className={twMerge(
-									"flex gap-2",
+									"flex gap-2 flex-1",
 									showDeleteOption && defaultAddress?._id !== id && "max-w-[92%]"
 								)}
 							>
@@ -77,14 +79,14 @@ const ShowMoreAddresses = ({
 									id={`show-more-address-${id}`}
 									value={value}
 									onChange={(e) => {
-										handleChange(e, id);
+										handleChange(e, id, i=i);
 										if(showMoreInPopup) {
 											close()
 										}
 									}}
 									defaultChecked={defaultAddress?._id == id ? "true" : ""}
 								/>
-								<label htmlFor={`show-more-address-${id}`} className="">
+								<label htmlFor={`show-more-address-${id}`} className="block flex-1 cursor-pointer">
 									{value}
 								</label>
 							</div>
