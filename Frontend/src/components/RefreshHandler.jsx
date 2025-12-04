@@ -39,7 +39,7 @@ const RefreshHandler = () => {
 			localStorage.getItem("refreshToken")
 		) {
 			fetchUserDetails()
-				.then((data) => {
+				.then(async (data) => {
 					// console.log("user details", data);
 					const accessToken = data?.accessToken;
 					if (accessToken) localStorage.setItem("accessToken", accessToken);
@@ -52,7 +52,8 @@ const RefreshHandler = () => {
 							"https://res.cloudinary.com/dxnmg6rrs/image/upload/v1739870853/Binkeyit/avatar/default_avatar.png";
 					}
 					dispatch(setUserDetails({ ...data.user, ...(!db_avatar && { avatar }) }));
-					dispatch(fetchCartItems()).unwrap();
+					dispatch(fetchCartItems());
+					dispatch(fetchAddress());
 				})
 				.catch((error) => {
 					console.log(error);
@@ -62,7 +63,7 @@ const RefreshHandler = () => {
 						navigate("/error", {replace: true});
 					}
 				});
-			dispatch(fetchAddress())
+			
 			// if (!stopRef.current) {
 			// 	dispatch(fetchCartItems()).unwrap();
 			// }

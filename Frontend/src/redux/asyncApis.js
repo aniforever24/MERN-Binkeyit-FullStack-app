@@ -123,6 +123,7 @@ export const deleteAddressAPI = async ({ id, force = false } = {}, thunkApi) => 
     }
 }
 
+// id of the address which is to set as default
 export const updateAddressAPI = async ( { isDefault = false, id } = {}, thunkApi)=> {
     try {
         const { data: responseData } = await authAxiosInstance({

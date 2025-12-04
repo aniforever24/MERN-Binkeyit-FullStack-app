@@ -9,9 +9,9 @@ export const deleteAddress = createAsyncThunk('address/deleteAddress', deleteAdd
 export const updateAddress = createAsyncThunk('address/updateAddress', updateAddressAPI);
 
 const initialState = {
-    addresses: [],
-    defaultAddress: null,
-    customDefaultAddress: null,
+    addresses: [],      // Array of Objects
+    defaultAddress: null,       // Object
+    customDefaultAddress: null,     // {address: Object, index: Number}
     count: 0,
     status: {
         fetchAddress: 'idle',
@@ -50,7 +50,7 @@ export const addressSlice = createSlice({
                 throw Error("Payload must be an object")
             }
             state.customDefaultAddress = action.payload;
-        }
+        },  
     },
     extraReducers: (builder) => {
         builder

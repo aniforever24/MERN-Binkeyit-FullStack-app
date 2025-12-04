@@ -68,7 +68,6 @@ export const updateAddressController = async (req, res) => {
         const userId = req.id;
         const { isDefault = false, id } = req.body;     // address id
 
-
         if (!id) {
             return res.status(400).json({
                 success: false,
@@ -77,7 +76,8 @@ export const updateAddressController = async (req, res) => {
             })
         };
 
-        // Prevent getting default address updated
+        // Prevent getting default address updated if 
+        // user is trying to update same default address 
         const isDefaultAddress = await Address.findOne({ _id: id, isDefault: true })
         if(isDefaultAddress) {
             return res.status(400).json({
@@ -89,7 +89,7 @@ export const updateAddressController = async (req, res) => {
 
         // Update address default status
         const updatedAddress = await Address.findOneAndUpdate({ userId, _id: id, isDefault: { $ne: true } },
-            { isDefault: isDefault },
+            { isDefault: true },
             { new: true }).sort({ createdAt: -1 });
 
         if (!updatedAddress) {
@@ -99,7 +99,6 @@ export const updateAddressController = async (req, res) => {
                 message: "Address not found"
             })
         };
-
         // Update other addresses' "isDefault" status
         const result = await Address.updateMany({ userId, _id: { $ne: id } }, { isDefault: false })
 
