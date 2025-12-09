@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { formatCurrency } from "../utils/UtilityFunctions";
+import { debounce, formatCurrency } from "../utils/UtilityFunctions";
 import { twMerge } from "tailwind-merge";
 import Divider from "../components/Divider";
 import { LuDot } from "react-icons/lu";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import {
+	setCustomDefaultAddress,
+	updateAddress,
+} from "../redux/address/addressSlice";
+import { notifyError, notifyWarning } from "../utils/foxToast";
+import authAxiosInstance from "../config/authAxiosConfig";
+import SummaryApi from "../Common/SummaryApi";
+import { deleteCartItem, fetchCartItems } from "../redux/cart/cartSlice";
 
 const SummaryCheckout = () => {
+	const dispatch = useDispatch();
 	const {
 		cartItems,
 		totalItems,
@@ -16,21 +26,153 @@ const SummaryCheckout = () => {
 		otherCharges: fixedOtherCharges,
 		status,
 	} = useSelector((state) => state.cart);
+	const { customDefaultAddress, defaultAddress } = useSelector(
+		(state) => state.address
+	);
+	const navigate = useNavigate();
+	// const debouncedNavigate = debounce(navigate, 1550)
 
 	const [finalCartValue, setFinalCartValue] = useState(0);
+	const [loading, setLoading] = useState(false);
+	const [products, setProducts] = useState([]);	// Array of product ids 
+	const [fixedOtherChargesValue, setFixedOtherChargesValue] = useState(0)
+
+	// Event Listeners
+	const handleCashOnDelivery = async (e) => {
+		e.preventDefault();
+		if (!defaultAddress) {
+			return notifyWarning("Please provide an address!");
+		}
+		if (loading) return;
+
+		try {
+			setLoading(true);
+			let newDefaultAddress = defaultAddress;
+
+			// Conditional default address updation
+			try {
+				if (
+					customDefaultAddress &&
+					customDefaultAddress?.address?._id !== defaultAddress?._id
+				) {
+					const result = await Swal.fire({
+						title:
+							'<h4 class="text-xl text-gray-600">Would you like to save this address as your new default address?</h4>',
+						showDenyButton: true,
+						// showCancelButton: true,
+						confirmButtonText: "Make Default",
+						denyButtonText: `skip`,
+						allowOutsideClick: false,
+					});
+					if (result.isConfirmed) {
+						const { data } = await dispatch(
+							updateAddress({ id: customDefaultAddress?.address?._id })
+						).unwrap();
+						newDefaultAddress = data;
+						dispatch(
+							setCustomDefaultAddress({
+								address: null,
+								index: -1,
+							})
+						);
+					}
+				}
+			} catch (error) {
+				console.log("error in updating default address:", error);
+				notifyError(
+					"There's an error in updating your default address.",
+					"Please update from profile section."
+				);
+			}
+
+			// Create new order
+			let totalAmt = totalValue;
+			if (totalValue < 500) {
+				totalAmt += fixedOtherChargesValue;
+			}
+			console.log('totalAmt:', totalAmt)
+
+			const { data: responseData } = await authAxiosInstance({
+				...SummaryApi.orderPayment,
+				data: {
+					products,
+					productDetails: cartItems,
+					deliveryAddress: newDefaultAddress,
+					subTotalAmt: totalValue,
+					totalAmt,
+					paymentMode: "cod",
+				},
+			});
+
+			const newOrder = responseData.data;
+			if (responseData.success) {
+				// Empty cart on order confirmation
+				const { data: responseData } = await authAxiosInstance({
+					...SummaryApi.emptyCart,
+					data: { id: newDefaultAddress?.userId },
+				});
+				dispatch(fetchCartItems());
+
+				await Swal.fire({
+					title: "Your new order created successfully!",
+					icon: "success",
+					allowOutsideClick: false,
+					timer: 3000,
+					timerProgressBar: true,
+					showConfirmButton: false,
+				});
+
+				navigate(`/new-order/success/${newOrder?._id}`, { state: { newOrder } });
+			}
+		} catch (error) {
+			console.log("error on submitting cod btn-->", error);
+			notifyError(
+				error?.response?.data?.message ||
+					error?.response?.data?.error ||
+					error?.message
+			);
+		} finally {
+			setLoading(false);
+		}
+	};
+	const handlePayOnline = (e) => {
+		e.preventDefault;
+		if (loading) return;
+
+		try {
+			setLoading(true);
+		} catch (error) {
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	useEffect(() => {
 		if (cartItems[0]) {
+			// console.log('cartItems:', cartItems)
 			const extraCharges = Object.values(fixedOtherCharges).reduce((acc, c) => {
 				return acc + c;
 			}, 0);
+			setFixedOtherChargesValue(extraCharges)
 			if (totalValue >= 500) {
 				setFinalCartValue(totalValue);
 			} else {
 				setFinalCartValue(totalValue + extraCharges);
 			}
 		}
+		
 	}, [cartItems, fixedOtherCharges]);
+	useEffect(()=> {
+		if(cartItems[0]) {
+			const cartProductIds = cartItems.map((c)=> {
+				return c.product._id
+			})
+			setProducts(cartProductIds)
+		}
+	}, [cartItems])
+	useEffect(() => {
+		console.log("products:", products);
+	}, [products]);
 
 	return (
 		<>
@@ -122,14 +264,22 @@ const SummaryCheckout = () => {
 
 				<div className="flex justify-between sm:gap-4 gap-0 sm:flex-row flex-col sm:mt-10 mt-5">
 					<Link
-						to="/checkout"
-						className="bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-shadow text-shadow-black font-medium rounded-md p-2.5 my-2 mb-0 cursor-pointer block w-full text-center"
+						className={twMerge(
+							"bg-green-600 hover:bg-green-500 active:bg-green-700 text-white  font-medium rounded-md p-2.5 my-2 mb-0 cursor-pointer block w-full text-center",
+							loading &&
+								"bg-gray-500 hover:bg-gray-500 active:bg-gray-500 text-gray-200 cursor-not-allowed"
+						)}
+						onClick={(e) => handleCashOnDelivery(e)}
 					>
 						Cash On Delivery
 					</Link>
 					<Link
-						to="/checkout"
-						className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-shadow text-shadow-black font-medium rounded-md p-2.5 my-2 mb-0 cursor-pointer block w-full text-center"
+						className={twMerge(
+							"bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium rounded-md p-2.5 my-2 mb-0 cursor-pointer block w-full text-center",
+							loading &&
+								"bg-gray-500 hover:bg-gray-500 active:bg-gray-500 text-gray-200 cursor-not-allowed"
+						)}
+						onClick={(e) => handlePayOnline(e)}
 					>
 						Pay Online
 					</Link>

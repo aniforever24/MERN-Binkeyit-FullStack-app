@@ -19,7 +19,7 @@ import productsRouter from './routes/productsRoute.js'
 import categoryRouter from './routes/categoryRoute.js'
 import cartRouter from './routes/authCartRoute.js'
 import addressRouter from './routes/authAddressRoute.js'
-
+import authOrderRouter from './routes/authOrderRoute.js'
 
 const app = express();
 
@@ -79,6 +79,7 @@ app.use('/api/products', productsRouter)
 app.use('/api/category', categoryRouter)
 app.use('/auth/cart', cartRouter)
 app.use('/auth/user/address', addressRouter)
+app.use('/auth/user/order', authOrderRouter)
 
 app.get('/testing', (req, res)=> res.send("Backend is working."))
 app.post('/auth/refresh-token', refreshAccessTokenMW, refreshTokenErrMW ,refreshAccessTokenController)

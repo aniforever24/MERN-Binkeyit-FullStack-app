@@ -14,6 +14,7 @@ import { GlobalContext } from "../context/context";
 import axiosErrorMsg from "../utils/axiosError";
 import { notifyError } from "../utils/foxToast";
 import { fetchAddress } from "../redux/address/addressSlice";
+import { setProducts } from "../redux/products/productSlice";
 
 const RefreshHandler = () => {
 	const navigate = useNavigate();
@@ -52,7 +53,7 @@ const RefreshHandler = () => {
 							"https://res.cloudinary.com/dxnmg6rrs/image/upload/v1739870853/Binkeyit/avatar/default_avatar.png";
 					}
 					dispatch(setUserDetails({ ...data.user, ...(!db_avatar && { avatar }) }));
-					dispatch(fetchCartItems());
+					dispatch(fetchCartItems())
 					dispatch(fetchAddress());
 				})
 				.catch((error) => {

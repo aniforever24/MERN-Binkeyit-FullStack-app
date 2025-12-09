@@ -13,6 +13,7 @@ const Checkout = () => {
 	const {
 		addresses: allAddresses,
 		defaultAddress,
+		customDefaultAddress,
 		count,
 		status,
 	} = useSelector((state) => state.address);
@@ -31,7 +32,7 @@ const Checkout = () => {
 			);
 			setData(nonDefaultAddresses);
 		}
-	}, [allAddresses]);
+	}, [allAddresses, defaultAddress]);
 
 	return (
 		<section className="text-gray-800">

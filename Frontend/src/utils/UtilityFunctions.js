@@ -120,9 +120,12 @@ export const isReactEvent = (obj) => {
 }
 
 // Check if given data is pure object {} or not
-export const isPlainObject = (v) => {
+export const isPlainObject = (v, {nullAllowed = false}) => {
+    let condition1 = v !== null;
+    if(nullAllowed) condition1 = true;
+
     return (
-        v !== null &&
+        condition1 &&
         typeof v === "object" &&
         Object.getPrototypeOf(v) === Object.prototype
     )

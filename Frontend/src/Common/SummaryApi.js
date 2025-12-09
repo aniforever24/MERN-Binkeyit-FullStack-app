@@ -32,10 +32,12 @@ const SummaryApi = {
     getCartItems: reqConfig("/auth/cart/get", "get"),
     updateCartItem: reqConfig("/auth/cart/update", "put"),
     deleteCartItem: reqConfig("/auth/cart/delete", "delete"),
+    emptyCart: reqConfig("/auth/cart/empty-cart", "delete"),
     fetchAddress: reqConfig("/auth/user/address/get", "get"),
     addAddress: reqConfig("/auth/user/address/add", "post"),
     deleteAddress: reqConfig("/auth/user/address/delete", "delete"),
     updateAddress: reqConfig("/auth/user/address/update", "put"),
+    orderPayment: reqConfig("/auth/user/order/new-order/payment", "post")
 }
 
 export default SummaryApi

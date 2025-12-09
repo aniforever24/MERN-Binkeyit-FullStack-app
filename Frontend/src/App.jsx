@@ -33,6 +33,8 @@ import ProductDisplay from "./pages/ProductDisplay";
 import SubCategoryWiseProducts from "./components/SubCategoryWiseProducts";
 const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
+const NewOrderSuccess = lazy(()=> import("./components/NewOrderSuccess"));
+const NewOrderFailure = lazy(()=> import("./components/NewOrderFaiilure"));
 
 const App = () => {
 	const router = createBrowserRouter([
@@ -235,6 +237,26 @@ const App = () => {
 							</ProtectedRoute>
 						</Suspense>
 					),
+				},
+				{
+					path: "new-order/success/:orderId",
+					element: (
+						<Suspense fallback={<Loading />}>
+							<ProtectedRoute>
+								<NewOrderSuccess />
+							</ProtectedRoute>
+						</Suspense>
+					)
+				},
+				{
+					path: "new-order/failure",
+					element: (
+						<Suspense fallback={<Loading />}>
+							<ProtectedRoute>
+								<NewOrderFailure />
+							</ProtectedRoute>
+						</Suspense>
+					)
 				},
 			],
 		},

@@ -46,8 +46,8 @@ const productSchema = new Schema({
         default: ""
     },
     moreDetails: {
-        type: Object,
-        default: { type: Schema.Types.Mixed }
+        type: Schema.Types.Mixed,
+        default: {}
     },
     published: {
         type: Boolean,
@@ -60,6 +60,7 @@ productSchema.index({ published: 1, createdAt: -1 })
 productSchema.index({ createdAt: -1 })
 productSchema.index({ updatedAt: -1 })
 productSchema.index({ name: 1 })
+
 // Setting a text index for relevance search
 productSchema.index({ 
     name: "text", 

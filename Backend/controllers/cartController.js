@@ -130,3 +130,32 @@ export const deleteCartItemController = async (req, res) => {
         genericServerErr(res, error)
     }
 }
+
+export const emptyCartController = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { id: user_id } = req.body;  // user id from client to ensure sensitive operation
+
+        if (userId !== user_id) {
+            return res.status(400).json({
+                success: false,
+                error: "User id does not match",
+                message: "User id does not match",
+            })
+        };
+
+        const query = { user: userId };
+
+        const toBeDeleted = await CartProduct.find(query);
+        const result = await CartProduct.deleteMany(query);
+
+        return res.status(200).json({
+            success: true,
+            message: "Cart emptied successfully",
+            data: { deletedCartItems: toBeDeleted, deletedResult: result }
+        });
+
+    } catch (error) {
+        genericServerErr(res, error);
+    }
+}

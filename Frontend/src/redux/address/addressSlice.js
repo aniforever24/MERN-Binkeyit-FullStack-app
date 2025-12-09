@@ -46,11 +46,11 @@ export const addressSlice = createSlice({
         },
         setCustomDefaultAddress: (state, action) => {
             // Type validation
-            if (!isPlainObject(action.payload)) {
+            if (!isPlainObject(action.payload, { nullAllowed: true })) {
                 throw Error("Payload must be an object")
             }
             state.customDefaultAddress = action.payload;
-        },  
+        },
     },
     extraReducers: (builder) => {
         builder

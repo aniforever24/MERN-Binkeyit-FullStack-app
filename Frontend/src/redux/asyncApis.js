@@ -70,6 +70,20 @@ export const deleteCartItemAPI = async ({ id } = {}, thunkApi) => {
         return thunkApi.rejectWithValue(msg)
     }
 }
+// id is user id
+export const emptyCartAPI = async({ id }= {}, thunkApi) => {
+    try {
+        const {data: responseData} = await authAxiosInstance({
+            ...SummaryApi.emptyCart,
+            data: {id}
+        });
+        
+        
+    } catch (error) {
+        const msg = error?.response?.data?.message || error?.message || "Failed to empty cart"
+        return thunkApi.rejectWithValue(msg)
+    }
+}
 
 /* ADDRESS APIs */
 export const fetchAddressAPI = async (_, thunkApi) => {
