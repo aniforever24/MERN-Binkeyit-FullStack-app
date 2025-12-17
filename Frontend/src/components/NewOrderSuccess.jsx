@@ -14,8 +14,8 @@ const NewOrderSuccess = () => {
 		}
 	}, []);
 	return (
-		<div className="max-w-lg mx-auto bg-white pb-2 space-y-3">
-			<h2 className="w-full bg-green-100 text-green-700 font-semibold text-lg sm:text-2xl px-4 py-3 text-center capitalize">
+		<div className="max-w-lg mx-auto bg-green-100 rounded-lg p-4 my-4 pb-2 space-y-3">
+			<h2 className="w-full bg-green-200 text-green-700 font-semibold text-lg sm:text-2xl px-4 py-3 text-center capitalize">
 				New order created successfully!
 			</h2>
 

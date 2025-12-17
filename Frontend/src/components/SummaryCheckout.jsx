@@ -84,13 +84,13 @@ const SummaryCheckout = () => {
 					"Please update from profile section."
 				);
 			}
-
+			
 			// Create new order
 			let totalAmt = totalValue;
 			if (totalValue < 500) {
 				totalAmt += fixedOtherChargesValue;
 			}
-			console.log('totalAmt:', totalAmt)
+			// console.log('totalAmt:', totalAmt)
 
 			const { data: responseData } = await authAxiosInstance({
 				...SummaryApi.orderPayment,
@@ -125,12 +125,8 @@ const SummaryCheckout = () => {
 				navigate(`/new-order/success/${newOrder?._id}`, { state: { newOrder } });
 			}
 		} catch (error) {
-			console.log("error on submitting cod btn-->", error);
-			notifyError(
-				error?.response?.data?.message ||
-					error?.response?.data?.error ||
-					error?.message
-			);
+			console.log("error on submitting cod btn-->", error);			
+			navigate(`/new-order/failure`, {state:{error}})
 		} finally {
 			setLoading(false);
 		}

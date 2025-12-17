@@ -31,6 +31,7 @@ import SubCategoryWiseProductsPage from "./pages/SubCategoryWiseProductsPage";
 import HomePage from "./pages/HomePage";
 import ProductDisplay from "./pages/ProductDisplay";
 import SubCategoryWiseProducts from "./components/SubCategoryWiseProducts";
+import OrderCancelled from "./components/OrderCancelled";
 const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const NewOrderSuccess = lazy(()=> import("./components/NewOrderSuccess"));
@@ -254,6 +255,16 @@ const App = () => {
 						<Suspense fallback={<Loading />}>
 							<ProtectedRoute>
 								<NewOrderFailure />
+							</ProtectedRoute>
+						</Suspense>
+					)
+				},
+				{
+					path: "new-order/cancelled",
+					element: (
+						<Suspense fallback={<Loading />}>
+							<ProtectedRoute>
+								<OrderCancelled />
 							</ProtectedRoute>
 						</Suspense>
 					)
