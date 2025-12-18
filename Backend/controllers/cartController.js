@@ -148,6 +148,13 @@ export const emptyCartController = async (req, res) => {
 
         const toBeDeleted = await CartProduct.find(query);
         const result = await CartProduct.deleteMany(query);
+        
+        // Also delete cart products from user db
+        await User.updateOne({_id: userId}, {
+            $set: {
+                shoppingCart: []
+            }
+        })
 
         return res.status(200).json({
             success: true,
