@@ -20,11 +20,20 @@ import categoryRouter from './routes/categoryRoute.js'
 import cartRouter from './routes/authCartRoute.js'
 import addressRouter from './routes/authAddressRoute.js'
 import authOrderRouter from './routes/authOrderRoute.js'
+import { webhookEndpointController } from './controllers/orderController.js';
 
 const app = express();
 
 
-app.use(express.json())
+// app.use(express.json())
+// Skipping parsing req.body with express.json() middleware for some routes
+app.use((req, res, next)=> {
+    if(req.originalUrl === '/api/webhook') {
+        next();
+    } else {
+        express.json()(req, res, next);
+    }
+})
 app.use(cookieParser())
 app.use(express.static('public'));
 
@@ -81,10 +90,17 @@ app.use('/auth/cart', cartRouter)
 app.use('/auth/user/address', addressRouter)
 app.use('/auth/user/order', authOrderRouter)
 
-app.get('/testing', (req, res)=> res.send("Backend is working."))
 app.post('/auth/refresh-token', refreshAccessTokenMW, refreshTokenErrMW ,refreshAccessTokenController)
 
+app.post('/api/webhook', express.raw({type: 'application/json'}), webhookEndpointController)
+
+app.get('/testing', (req, res)=> res.send("Backend is working. 👍"))
+
+
 const port = process.env.PORT || 3000;
+
+// Server testing
+app.get('/', (req, res)=> res.status(200).json({message: `Server is running @ ${process.env.PORT || 3000}`}))
 
 app.listen(port, (er) => {
     if (er) {

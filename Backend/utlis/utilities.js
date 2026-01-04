@@ -46,3 +46,25 @@ export const getCloudinaryPublicId = (url) => {
     
     return publicId
 }
+
+// Calculate discounted price
+export const calculateDiscountedPrice = (price, dis) => {
+    if (!dis) dis = 0;
+    if (!price) return;
+    price = Number(price);
+    const d = dis / 100; // discount%
+    const discountedPrice = price - price * d;
+    return Number(discountedPrice.toFixed(2));
+};
+
+// Check if given data is pure object {} or not
+export const isPlainObject = (v, {nullAllowed = false}) => {
+    let condition1 = v !== null;
+    if(nullAllowed) condition1 = true;
+
+    return (
+        condition1 &&
+        typeof v === "object" &&
+        Object.getPrototypeOf(v) === Object.prototype
+    )
+}

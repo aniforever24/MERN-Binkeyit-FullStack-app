@@ -37,7 +37,8 @@ const SummaryApi = {
     addAddress: reqConfig("/auth/user/address/add", "post"),
     deleteAddress: reqConfig("/auth/user/address/delete", "delete"),
     updateAddress: reqConfig("/auth/user/address/update", "put"),
-    orderPayment: reqConfig("/auth/user/order/new-order/payment", "post")
+    orderPayment: reqConfig("/auth/user/order/new-order/payment", "post"),
+    paymentConfirmation: reqConfig("/auth/user/order/new-order/payment/confirmation", "post")
 }
 
 export default SummaryApi

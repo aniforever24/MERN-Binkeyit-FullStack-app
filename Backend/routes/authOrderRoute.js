@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { auth0MW } from '../middlewares/authMW.js'
 import { accessTokenErrMW } from '../middlewares/errorMW.js'
-import { cashPaymentController, onlinePaymentController } from '../controllers/orderController.js'
+import { cashPaymentController, confirmOnlinePaymentController, onlinePaymentController } from '../controllers/orderController.js'
 
 const router = Router()
 
@@ -33,5 +33,7 @@ router.post('/new-order/payment', async (req, res) => {
         return await onlinePaymentController(req, res)
     }
 })
+
+router.post('/new-order/payment/confirmation', confirmOnlinePaymentController)
 
 export default router
