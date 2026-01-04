@@ -10,10 +10,11 @@ import {
 	setCustomDefaultAddress,
 	updateAddress,
 } from "../redux/address/addressSlice";
-import { notifyError, notifyWarning } from "../utils/foxToast";
+import { notifyError, notifyWarning, toastLoading } from "../utils/foxToast";
 import authAxiosInstance from "../config/authAxiosConfig";
 import SummaryApi from "../Common/SummaryApi";
 import { deleteCartItem, fetchCartItems } from "../redux/cart/cartSlice";
+import axiosErrorMsg from "../utils/axiosError";
 
 const SummaryCheckout = () => {
 	const dispatch = useDispatch();
@@ -34,8 +35,10 @@ const SummaryCheckout = () => {
 
 	const [finalCartValue, setFinalCartValue] = useState(0);
 	const [loading, setLoading] = useState(false);
-	const [products, setProducts] = useState([]);	// Array of product ids 
-	const [fixedOtherChargesValue, setFixedOtherChargesValue] = useState(0)
+	const [products, setProducts] = useState([]); // Array of products
+	const [productIds, setProductIds] = useState([]); // Array of product ids
+	const [cartItemsIds, setCartItemsIds] = useState([])
+	const [fixedOtherChargesValue, setFixedOtherChargesValue] = useState(0);
 
 	// Event Listeners
 	const handleCashOnDelivery = async (e) => {
@@ -47,7 +50,7 @@ const SummaryCheckout = () => {
 
 		try {
 			setLoading(true);
-			let newDefaultAddress = defaultAddress;
+			let deliveryAddress = defaultAddress;
 
 			// Conditional default address updation
 			try {
@@ -68,13 +71,15 @@ const SummaryCheckout = () => {
 						const { data } = await dispatch(
 							updateAddress({ id: customDefaultAddress?.address?._id })
 						).unwrap();
-						newDefaultAddress = data;
+						deliveryAddress = data;
 						dispatch(
 							setCustomDefaultAddress({
 								address: null,
 								index: -1,
 							})
 						);
+					} else {
+						deliveryAddress = customDefaultAddress.address;
 					}
 				}
 			} catch (error) {
@@ -84,7 +89,7 @@ const SummaryCheckout = () => {
 					"Please update from profile section."
 				);
 			}
-			
+
 			// Create new order
 			let totalAmt = totalValue;
 			if (totalValue < 500) {
@@ -95,9 +100,9 @@ const SummaryCheckout = () => {
 			const { data: responseData } = await authAxiosInstance({
 				...SummaryApi.orderPayment,
 				data: {
-					products,
-					productDetails: cartItems,
-					deliveryAddress: newDefaultAddress,
+					products: productIds,
+					productDetails: cartItemsIds,
+					deliveryAddress,
 					subTotalAmt: totalValue,
 					totalAmt,
 					paymentMode: "cod",
@@ -109,7 +114,7 @@ const SummaryCheckout = () => {
 				// Empty cart on order confirmation
 				const { data: responseData } = await authAxiosInstance({
 					...SummaryApi.emptyCart,
-					data: { id: newDefaultAddress?.userId },
+					data: { id: deliveryAddress?.userId },
 				});
 				dispatch(fetchCartItems());
 
@@ -125,19 +130,80 @@ const SummaryCheckout = () => {
 				navigate(`/new-order/success/${newOrder?._id}`, { state: { newOrder } });
 			}
 		} catch (error) {
-			console.log("error on submitting cod btn-->", error);			
-			navigate(`/new-order/failure`, {state:{error}})
+			console.log("error on submitting cod btn-->", error);
+			navigate(`/new-order/failure`, { state: { error } });
 		} finally {
 			setLoading(false);
 		}
 	};
-	const handlePayOnline = (e) => {
+	const handlePayOnline = async (e) => {
 		e.preventDefault;
 		if (loading) return;
+		setLoading(true);
+		let deliveryAddress = defaultAddress;
 
+		// Conditional default address updation
 		try {
-			setLoading(true);
+			if (
+				customDefaultAddress &&
+				customDefaultAddress?.address?._id !== defaultAddress?._id
+			) {
+				const result = await Swal.fire({
+					title:
+						'<h4 class="text-xl text-gray-600">Would you like to save this address as your new default address?</h4>',
+					showDenyButton: true,
+					// showCancelButton: true,
+					confirmButtonText: "Make Default",
+					denyButtonText: `skip`,
+					allowOutsideClick: false,
+				});
+				if (result.isConfirmed) {
+					const { data } = await dispatch(
+						updateAddress({ id: customDefaultAddress?.address?._id })
+					).unwrap();
+					deliveryAddress = data;
+					dispatch(
+						setCustomDefaultAddress({
+							address: null,
+							index: -1,
+						})
+					) 
+				} else {
+						deliveryAddress = customDefaultAddress.address;
+					}
+			}
 		} catch (error) {
+			console.log("error in updating default address:", error);
+			notifyError(
+				"There's an error in updating your default address.",
+				"Please update from profile section."
+			);
+		}
+
+		// Online payment redirection setup
+		try {
+			const api = authAxiosInstance({
+				...SummaryApi.orderPayment,
+				data: {
+					productDetails: cartItems,
+					deliveryAddress,
+					fixedOtherChargesValue,
+					subTotalAmt: totalValue,
+					paymentMode: "online",
+				},
+			});
+
+			toastLoading("Loading...");
+
+			const { data: responseData } = await api;
+
+			const data = responseData.data;
+			const {payment_url, sessionId} = data;
+			
+			window.location.href = payment_url;
+
+		} catch (error) {
+			axiosErrorMsg(error)
 		} finally {
 			setLoading(false);
 		}
@@ -149,26 +215,32 @@ const SummaryCheckout = () => {
 			const extraCharges = Object.values(fixedOtherCharges).reduce((acc, c) => {
 				return acc + c;
 			}, 0);
-			setFixedOtherChargesValue(extraCharges)
+			setFixedOtherChargesValue(extraCharges);
 			if (totalValue >= 500) {
 				setFinalCartValue(totalValue);
 			} else {
 				setFinalCartValue(totalValue + extraCharges);
 			}
 		}
-		
 	}, [cartItems, fixedOtherCharges]);
-	useEffect(()=> {
-		if(cartItems[0]) {
-			const cartProductIds = cartItems.map((c)=> {
-				return c.product._id
-			})
-			setProducts(cartProductIds)
-		}
-	}, [cartItems])
 	useEffect(() => {
-		console.log("products:", products);
-	}, [products]);
+		if (cartItems[0]) {
+			let prods = [];
+			let cartIds = [];
+			const cartProductIds = cartItems.map((c, i) => {
+				prods[i] = c.product;
+				cartIds[i] = c._id;
+				return c.product._id;
+			});
+			setProducts(prods);
+			setProductIds(cartProductIds);
+			setCartItemsIds(cartIds)
+		}
+	}, [cartItems]);
+	// useEffect(() => {
+	// 	console.log("productIds:", productIds);
+	// 	console.log("products:", products);
+	// }, [productIds, products]);
 
 	return (
 		<>
