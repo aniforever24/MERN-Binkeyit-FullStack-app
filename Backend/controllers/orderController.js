@@ -96,7 +96,7 @@ export const webhookEndpointController = async (req, res) => {
 
     let event = req.body;
 
-    console.log('event:', event)
+    // console.log('event:', event)
 
     if (endpointSecret) {
         const signature = req.headers['stripe-signature'];
@@ -165,7 +165,7 @@ export const webhookEndpointController = async (req, res) => {
 
             // Save new order in db
             const newOrder = await (new Order(payload)).save()
-            console.log('newOrder:-->', newOrder)
+            // console.log('newOrder:-->', newOrder)
 
             // Update User with new order in db
             const updateResult = await User.updateOne({ _id: session.client_reference_id }, {
