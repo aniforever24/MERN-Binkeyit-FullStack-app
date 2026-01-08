@@ -8,10 +8,7 @@ const addressSnapshotSchema = new Schema({
     mobile: { type: String, immutable: true },   //  For now not required specified
     state: { type: String, immutable: true },
     country: { type: String, immutable: true },
-},
-    { _id: false }
-)
-
+}, { _id: false })
 // Define deliveryAddressSchema
 const deliveryAddressSchema = new Schema({
     addressId: {
@@ -25,18 +22,44 @@ const deliveryAddressSchema = new Schema({
     }
 }, { _id: false })
 
+// Define productSnapshotSchema
+const productSnapshotSchema = new Schema({
+    name: { type: String, immutable: true, required: true },
+    images: { type: [String], immutable: true, required: true },
+    unit: { type: String, immutable: true, required: true },
+    price: { type: Number, immutable: true, required: true },
+    discount: { type: Number, immutable: true },
+    categories: { type: [String], immutable: true },    // Category name will be stored
+    subCategories: { type: [String], immutable: true }, // Sub categories name will be stored
+    stock: { type: Number, immutable: true },
+    description: { type: String, immutable: true },
+    moreDetails: { type: Schema.Types.Mixed, immutable: true },
+}, { _id: false })
+// Define productsSchema
+const productsSchema = new Schema({
+    productId: { type: Schema.Types.ObjectId, ref: "Products" },
+    snapshot: { type: productSnapshotSchema, required: true }
+}, {_id: false})
+
+// Define cartSnapshotSchema
+const cartItemSchema = new Schema({
+    cartId: String,
+    product: { type: productsSchema, required: true },
+    quantity: { type: Number, required: true },
+}, { _id: false })
+
 const orderSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId, ref: "Users", required: true, index: true
     },
     products: [
         {
-            type: Schema.Types.ObjectId, ref: "Products"
+            type: productsSchema, required: true
         }
     ],
     productDetails: [
         {
-            type: Schema.Types.ObjectId, ref: "CartProducts"
+            type: cartItemSchema, required: true
         }
     ],
     paymentId: {

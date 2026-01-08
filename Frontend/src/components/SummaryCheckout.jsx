@@ -100,8 +100,8 @@ const SummaryCheckout = () => {
 			const { data: responseData } = await authAxiosInstance({
 				...SummaryApi.orderPayment,
 				data: {
-					products: productIds,
-					productDetails: cartItemsIds,
+					productIds,
+					cartItemsIds,
 					deliveryAddress,
 					subTotalAmt: totalValue,
 					totalAmt,
@@ -185,7 +185,7 @@ const SummaryCheckout = () => {
 			const api = authAxiosInstance({
 				...SummaryApi.orderPayment,
 				data: {
-					productDetails: cartItems,
+					cartItems,
 					deliveryAddress,
 					fixedOtherChargesValue,
 					subTotalAmt: totalValue,

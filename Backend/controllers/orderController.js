@@ -6,16 +6,34 @@ import fs from 'fs/promises'
 import util from 'util'
 import { calculateDiscountedPrice } from "../utlis/utilities.js"
 import Address from "../models/database models/AddressModel.js"
+import Product from "../models/database models/ProductModel.js"
+import CartProduct from "../models/database models/CartProductsModel.js"
+
+function productSnapshot(product) {
+    return {
+        name: product.name,
+        images: product?.images.map((imgObj => imgObj.url)),
+        unit: product.unit,
+        price: product.price,
+        discount: product?.discount || 0,
+        categories: product?.categories.map(cat => cat?.name),
+        subCategories: product?.subCategories.map(subcat => subcat?.name),
+        stock: product?.stock,
+        description: product?.description,
+        moreDetails: product?.moreDetails
+    }
+}
 
 export const cashPaymentController = async (req, res) => {
     try {
         const { id: userId, paymentMode } = req;
-        let { products, productDetails, deliveryAddress, subTotalAmt, totalAmt } = req.body
+        let { productIds, cartItemsIds, deliveryAddress, subTotalAmt, totalAmt } = req.body
 
-        if (!products || !productDetails || !deliveryAddress || !subTotalAmt || !totalAmt) {
-            res.status(400).json({
+        if (!productIds || !cartItemsIds || !deliveryAddress || !subTotalAmt || !totalAmt) {
+            return res.status(400).json({
                 success: false,
-                error: "One or more order details is/are not available!"
+                error: "One or more order details is/are not available!",
+                message: "One or more order details is/are not available!",
             })
         }
 
@@ -24,18 +42,53 @@ export const cashPaymentController = async (req, res) => {
         if (!deliveryAddress) {
             return res.status(400).json({
                 success: false,
-                error: "Delievery address not found in database",
-                message: "Invalid delievery address!"
+                error: "Delivery address not found in database",
+                message: "Invalid delivery address!"
             })
+        };
+
+        let products = await Promise.all(productIds.map((prodId) => Product.findById(prodId).populate('categories').populate('subCategories').lean()));
+
+        let cartItems = await Promise.all(cartItemsIds.map(cartId => {
+            return (
+                CartProduct.findById(cartId).populate([
+                    {
+                        path: 'product',
+                        populate: [
+                            { path: 'categories' },
+                            { path: 'subCategories' },
+                        ]
+                    },
+                ]).lean()
+            )
         }
+        ));
+
+        const orderProducts = products.map(prod => {
+            return {
+                productId: prod._id,
+                snapshot: productSnapshot(prod)
+            }
+        })
+        const orderCartItems = cartItems.map(item => {
+            return {
+                cartId: item._id,
+                product: {
+                    productId: item.product._id,
+                    snapshot: productSnapshot(item.product)
+                },
+                quantity: item.quantity
+            }
+        })
 
         const paymentStatus = "pending";
         const deliveryStatus = "pending";
 
+
         const payload = {
             userId,
-            products,
-            productDetails,
+            products: orderProducts,
+            productDetails: orderCartItems,
             paymentMode,
             paymentStatus,
             deliveryAddress: {
@@ -61,21 +114,8 @@ export const cashPaymentController = async (req, res) => {
                 {
                     path: "userId",
                     select: "name email mobile"
-                },
-                {
-                    path: "products",
-                    populate: [
-                        { path: "categories", select: "-__v -updatedAt -createdAt" },
-                        { path: "subCategories", select: "-__v -updatedAt -createdAt" },
-                    ],
-                    select: "-__v -updatedAt -createdAt"
-                },
-                {
-                    path: "productDetails",
-                    select: "-__v -updatedAt -createdAt"
-                },
+                }
             ]).lean()
-
 
         const updateResult = await User.updateOne({ _id: userId }, { $push: { orderHistory: newOrder._id } })
 
@@ -121,27 +161,53 @@ export const webhookEndpointController = async (req, res) => {
         case 'checkout.session.completed':
             const session = event.data.object;
 
-            // console.log('session:', session)
-
             // Get line items defined in sessions object in onlinePayment endpoint
             const line_items = await Stripe.checkout.sessions.listLineItems(session.id)
 
-            // console.log('line_items:', line_items)
-            // console.log('line_items.data[0].metadata -->:', line_items.data[0].metadata)
-            // console.log('line_items.data[0] -->:', line_items.data[0].price)
-
-            // Retrieve delivery address
             const deliveryAddress = await Address.findById(session.metadata.shipping_address)
+
+
+            const productIds = line_items.data.map((item) => item.metadata.productId);
+            const cartItemsIds = line_items.data.map((item) => item.metadata.cartId);
+
+            let products = await Promise.all(productIds.map((prodId) => Product.findById(prodId).populate('categories').populate('subCategories').lean()));
+            let cartItems = await Promise.all(cartItemsIds.map(cartId => {
+                return (
+                    CartProduct.findById(cartId).populate([
+                        {
+                            path: 'product',
+                            populate: [
+                                { path: 'categories' },
+                                { path: 'subCategories' },
+                            ]
+                        },
+                    ]).lean()
+                )
+            }
+            ));
+
+            const orderProducts = products.map(prod => {
+                return {
+                    productId: prod._id,
+                    snapshot: productSnapshot(prod)
+                }
+            })
+            const orderCartItems = cartItems.map(item => {
+                return {
+                    cartId: item._id,
+                    product: {
+                        productId: item.product._id,
+                        snapshot: productSnapshot(item.product)
+                    },
+                    quantity: item.quantity
+                }
+            })
 
             // Create payload for Order 
             const payload = {
                 userId: session.client_reference_id,
-                products: line_items.data.map((item) => {
-                    return item.metadata.productId
-                }),
-                productDetails: line_items.data.map((item) => {
-                    return item.metadata.cartId
-                }),
+                products: orderProducts,
+                productDetails: orderCartItems,
                 paymentId: session.payment_intent,
                 sessionId: session.id,
                 paymentStatus: "paid",
@@ -186,7 +252,7 @@ export const webhookEndpointController = async (req, res) => {
 export const onlinePaymentController = async (req, res) => {
     try {
         const { id: userId, paymentMode } = req;
-        const { productDetails, deliveryAddress, fixedOtherChargesValue, subTotalAmt } = req.body;
+        const { cartItems, deliveryAddress, fixedOtherChargesValue, subTotalAmt } = req.body;
 
         const user = await User.findById(userId, "name email mobile emailVerified status role mobileVerified").lean()
 
@@ -194,12 +260,10 @@ export const onlinePaymentController = async (req, res) => {
         if (subTotalAmt < 500) {
             isShippingChargesApplicable = true
         };
-        // console.log("isShippingChargesApplicable:-->", isShippingChargesApplicable)
-        // console.log("fixedOtherChargesValue:-->", fixedOtherChargesValue)
 
         const payload = {
             client_reference_id: userId,
-            line_items: productDetails.map((item, i) => {
+            line_items: cartItems.map((item, i) => {
                 let discountedPrice = calculateDiscountedPrice(item.product.price, item.product?.discount || 0)
 
                 discountedPrice = (discountedPrice * 100).toFixed(2)

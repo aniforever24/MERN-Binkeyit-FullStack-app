@@ -24,7 +24,6 @@ import { webhookEndpointController } from './controllers/orderController.js';
 
 const app = express();
 
-
 // app.use(express.json())
 // Skipping parsing req.body with express.json() middleware for some routes
 app.use((req, res, next)=> {
