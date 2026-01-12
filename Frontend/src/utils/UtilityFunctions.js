@@ -97,7 +97,7 @@ export const setPageTitle = (title) => {
     }, [])
 }
 
-// Format price to proper locale INR mode
+// Format price to proper locale INR mode (space is after rupee symbol)
 export const formatCurrency = (price, space = false) => {
     if (!price) return
     if (typeof price !== 'number') {
@@ -114,15 +114,15 @@ export const formatCurrency = (price, space = false) => {
     return inrWithSpace || inr
 }
 
-// Function to test if param passed in a react event object
+// Function to test if param passed is a react event object
 export const isReactEvent = (obj) => {
     return typeof obj === "object" && "nativeEvent" in obj && "isDefaultPrevented" in obj;
 }
 
 // Check if given data is pure object {} or not
-export const isPlainObject = (v, {nullAllowed = false}) => {
+export const isPlainObject = (v, { nullAllowed = false }) => {
     let condition1 = v !== null;
-    if(nullAllowed) condition1 = true;
+    if (nullAllowed) condition1 = true;
 
     return (
         condition1 &&
@@ -150,8 +150,18 @@ export const debounce = (api, delay) => {
 
     return function (...args) {      // ...arg used rest operator to store passed arguments into [arguments]
         clearTimeout(timer);        // clear any previous call if any
-        timer = setTimeout(()=> {
+        timer = setTimeout(() => {
             api.apply(this, args)   // apply will call api with unpacked args (array)
-        }, delay)        
+        }, delay)
     }
+}
+
+// Convert ISO date to locale date string
+export const getLocaleDate = (dt = new Date(), { sep = "/", ...options } = {}) => {
+    const dtObject = new Date(dt)
+
+    if (!Object.keys(options).length) {
+        return dtObject.toLocaleDateString('in').replaceAll("/", sep)
+    }
+    return dtObject.toLocaleDateString('in', options)
 }
