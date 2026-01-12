@@ -3,24 +3,37 @@ import Order from "../models/database models/OrderModel.js"
 import User from "../models/database models/UserModel.js"
 import { genericServerErr } from "../utlis/genericServerErr.js"
 import fs from 'fs/promises'
-import util from 'util'
 import { calculateDiscountedPrice } from "../utlis/utilities.js"
 import Address from "../models/database models/AddressModel.js"
 import Product from "../models/database models/ProductModel.js"
 import CartProduct from "../models/database models/CartProductsModel.js"
 
-function productSnapshot(product) {
-    return {
-        name: product.name,
-        images: product?.images.map((imgObj => imgObj.url)),
-        unit: product.unit,
-        price: product.price,
-        discount: product?.discount || 0,
-        categories: product?.categories.map(cat => cat?.name),
-        subCategories: product?.subCategories.map(subcat => subcat?.name),
-        stock: product?.stock,
-        description: product?.description,
-        moreDetails: product?.moreDetails
+export const getOrdersController = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { page = 1, limit = 10 } = req.body;
+
+        let skip = (page - 1) * limit;
+
+        const orders = await Order.find({ userId }).limit(limit).skip(skip)
+        const countOfOrders = await Order.find({ userId }).countDocuments();
+
+        if (!orders) {
+            return res.status(204).json({
+                success: true,
+                message: "No orders found!",
+                data: { orders, countOfOrders }
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Orders fetched successfuly",
+            data: { orders, countOfOrders, pagination: {page, limit} }
+        })
+
+    } catch (error) {
+        return genericServerErr(res, error)
     }
 }
 
@@ -103,8 +116,8 @@ export const cashPaymentController = async (req, res) => {
                 }
             },
             deliveryStatus,
-            subTotalAmt,
-            totalAmt
+            subTotalAmt: Number(subTotalAmt.toFixed(2)),
+            totalAmt: Number(totalAmt.toFixed(2))
         }
 
         const order = new Order(payload);
@@ -364,5 +377,21 @@ export const confirmOnlinePaymentController = async (req, res) => {
 
     } catch (error) {
         return genericServerErr(res, error)
+    }
+}
+
+// General functions
+function productSnapshot(product) {
+    return {
+        name: product.name,
+        images: product?.images.map((imgObj => imgObj.url)),
+        unit: product.unit,
+        price: product.price,
+        discount: product?.discount || 0,
+        categories: product?.categories.map(cat => cat?.name),
+        subCategories: product?.subCategories.map(subcat => subcat?.name),
+        stock: product?.stock,
+        description: product?.description,
+        moreDetails: product?.moreDetails
     }
 }

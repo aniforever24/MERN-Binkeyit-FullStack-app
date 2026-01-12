@@ -71,14 +71,14 @@ export const deleteCartItemAPI = async ({ id } = {}, thunkApi) => {
     }
 }
 // id is user id
-export const emptyCartAPI = async({ id }= {}, thunkApi) => {
+export const emptyCartAPI = async ({ id } = {}, thunkApi) => {
     try {
-        const {data: responseData} = await authAxiosInstance({
+        const { data: responseData } = await authAxiosInstance({
             ...SummaryApi.emptyCart,
-            data: {id}
+            data: { id }
         });
-        
-        
+
+
     } catch (error) {
         const msg = error?.response?.data?.message || error?.message || "Failed to empty cart"
         return thunkApi.rejectWithValue(msg)
@@ -138,17 +138,34 @@ export const deleteAddressAPI = async ({ id, force = false } = {}, thunkApi) => 
 }
 
 // id of the address which is to set as default
-export const updateAddressAPI = async ( { isDefault = false, id } = {}, thunkApi)=> {
+export const updateAddressAPI = async ({ isDefault = false, id } = {}, thunkApi) => {
     try {
         const { data: responseData } = await authAxiosInstance({
             ...SummaryApi.updateAddress,
-            data: {isDefault, id}
+            data: { isDefault, id }
         });
-        
+
         return responseData
 
     } catch (error) {
-        const message = error?.responde?.data?.message || error?.message;
+        const message = error?.response?.data?.message || error?.message;
         return thunkApi.rejectWithValue(message);
+    }
+}
+
+/* ORDER APIs */
+export const fetchOrderAPI = async ({ page = 1, limit = 10 } = {}, thunkApi) => {
+    try {
+        const {signal} = thunkApi
+        const { data: responseData } = await authAxiosInstance({
+            ...SummaryApi.fetchOrders,
+            data: { page, limit },
+            signal
+        });
+        return responseData.data
+
+    } catch (error) {
+        const message = error?.response?.data?.message || error?.message;
+        return thunkApi.rejectWithValue(message)
     }
 }

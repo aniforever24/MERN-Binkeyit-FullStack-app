@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Divider from "../../components/Divider";
-import { Navigate, Outlet, useNavigate } from "react-router";
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import authAxiosInstance from "../../config/authAxiosConfig";
@@ -17,13 +17,13 @@ const Dashboard = () => {
 	const {setIsUserLoggedIn} = useContext(GlobalContext)
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const [ifActive, setIfActive] = useState(false);
+	const location = useLocation()
 	const [isAdmin, setIsAdmin] = useState(false);
-	const active = "text-amber-600 font-bold w-fit";
-	const activeClass = ({ isActive, isPending }) => {
-		setIfActive(isActive);
+	
+	const activeClass = ({ isActive }) => {
+		
 		return isActive
-			? `${active}`
+			? "text-amber-600 font-bold w-fit"
 			: "cursor-pointer group-hover:text-amber-600 w-fit hover:font-bold";
 	};
 
@@ -132,7 +132,7 @@ const Dashboard = () => {
 
 				{/* Right Dashboard */}
 				<div className="bg-white max-sm:justify-center sm:min-h-[540px]  min-h-[70vh] w-full">
-					<Outlet />
+					<Outlet key={location.key} />
 				</div>
 			</Layout>
 		</section>
