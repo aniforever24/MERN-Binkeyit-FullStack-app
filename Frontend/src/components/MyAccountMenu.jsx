@@ -111,10 +111,10 @@ const MyAccountMenu = () => {
 						My Profile
 					</Link>
 					<Link
-						to="/user/dashboard/my-cart"
+						to="/user/dashboard/orders"
 						className="hover:text-amber-600 cursor-pointer active:text-green-700"
 					>
-						My Cart
+						My Orders
 					</Link>
 					<Link
 						onClick={handleLogout}
