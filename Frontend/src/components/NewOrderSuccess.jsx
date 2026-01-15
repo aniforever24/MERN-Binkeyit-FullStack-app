@@ -84,7 +84,8 @@ const NewOrderSuccess = () => {
 	}
 
 	return (
-		<div className="max-w-lg mx-auto bg-green-100 rounded-lg p-4 my-4 pb-2 space-y-3">
+		<div className="max-w-lg md:min-w-[520px] mx-auto bg-green-100 rounded-lg p-6 my-4 pb-10">
+		<div className="space-y-3 ">
 			<h2 className="w-full bg-green-200 text-green-700 font-semibold text-lg sm:text-2xl px-4 py-3 text-center capitalize">
 				New order created successfully!
 			</h2>
@@ -93,14 +94,14 @@ const NewOrderSuccess = () => {
 					<p className="text-amber-600 text-left bg-gray-100 sm:p-4 p-2 upper sm:text-lg text-base flex flex-col gap-2">
 						<div className="flex flex-col">
 							<span>Your order id is </span>
-							<span className="italic font-semibold text-wrap break-words text-base bg-yellow-100 text-center">
+							<span className="italic font-semibold text-wrap break-words md:text-base text-sm bg-yellow-100 text-center">
 								{newOnlineOrder.orderId}
 							</span>
 						</div>
 						<Divider/>
 						<div className="flex flex-col">
 							<span>Your payment id is </span>
-							<span className="italic font-semibold text-wrap break-words text-base bg-yellow-100 text-center">
+							<span className="italic font-semibold text-wrap break-words md:text-base text-sm bg-yellow-100 text-center">
 								{newOnlineOrder.paymentId}
 							</span>
 						</div>
@@ -116,9 +117,10 @@ const NewOrderSuccess = () => {
 					</p>
 				</>
 			)}
-			<p className="text-gray-500 text-sm mx-2 ">
+			<p className="text-gray-500 text-sm mx-2 relative top-5">
 				{newOnlineOrder ? "* Please keep this order id and payment id for future reference" : "* Please keep this order id for future reference"}				
 			</p>
+		</div>
 		</div>
 	);
 };

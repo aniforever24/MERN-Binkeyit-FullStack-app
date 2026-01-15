@@ -5,40 +5,124 @@ import { fetchOrders, setStatusIdle } from "../../redux/order/orderSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { formatCurrency, getLocaleDate } from "../../utils/UtilityFunctions";
 import Spinner from "../../components/Spinner";
+import { twMerge } from "tailwind-merge";
+import { notifyError } from "../../utils/foxToast";
 
 const MyOrders = () => {
 	const dispatch = useDispatch();
 	const { orders, countOfOrders, status } = useSelector((state) => state.order);
 
 	const [data, setData] = useState([]);
-	const [pagination, setPagination] = useState({ page: 1, limit: 10 });
+	const [pagination, setPagination] = useState({
+		page: 1,
+		limit: 10,
+		filter: undefined,
+	});
+	const [orderDetails, setOrderDetails] = useState({
+		totalPages: 0,
+		countOfOrdersLeft: 0,
+	});
 
+	const strictModeGuard = useRef(false);
 	const hasFetchedRef = useRef(false);
+	const elRef = useRef(null);
 
-	const fetchData = async () => {
+	const fetchData = async (pagination) => {
 		try {
-			const { orders, countOfOrders } = await dispatch(fetchOrders()).unwrap();
-			console.log("orders fetched success");
+			const data = await dispatch(fetchOrders(pagination)).unwrap();
+			const {
+				orders,
+				countOfOrders,
+				countOfOrdersLeft,
+				page: newPage,
+				limit: newLimit,
+			} = data;
+
+			// console.log("orders fetched success");
+
 			setData((prev) => {
 				return [...prev, ...orders];
 			});
-			return { orders, countOfOrders };
+			setPagination((prev) => {
+				return {
+					...prev,
+					page: newPage,
+					limit: newLimit,
+				};
+			});
+			setOrderDetails((prev) => {
+				return {
+					...prev,
+					countOfOrdersLeft,
+				};
+			});
+
+			return data;
+
 		} catch (error) {
 			console.log("error in fetching data:", error);
-			return error
+			return error;
+		} finally {
+			dispatch(setStatusIdle());
 		}
 	};
 
+	function infiniteScrolling(el, api, pagination) {
+		if (!el || !api) {
+			notifyError("First and second parameters are required!");
+			return null;
+		}
+		if (!orderDetails.countOfOrdersLeft) {
+			return null;
+		}
+
+		const observer = new IntersectionObserver(
+			async ([entry]) => {
+				if (entry.isIntersecting) {
+					// console.log("infiniteScrolling intersection occurs");
+					await api(pagination);
+				}
+			},
+			{
+				rootMargin: "50px",
+			}
+		);
+		
+		observer.observe(el);
+		return observer;
+	}
+
 	useEffect(() => {
-		if (!hasFetchedRef.current) {
-			hasFetchedRef.current = true;
-			fetchData();
+		if (!strictModeGuard.current) {
+			strictModeGuard.current = true;
+			fetchData(pagination).then((data) => {
+				hasFetchedRef.current = true;
+			});
 		}
 	}, []);
 
 	useEffect(() => {
-		console.log("data: ", data);
+		// console.log('data:', data)
+		let observer;
+		if (data.length) {
+			observer = infiniteScrolling(elRef.current, fetchData, pagination);
+		}
+		return () => {
+			if (observer && elRef.current) {
+				observer.unobserve(elRef.current);
+			}
+		};
 	}, [data]);
+	useEffect(() => {
+		if (countOfOrders) {
+			setOrderDetails((prev) => {
+				return {
+					...prev,
+					totalPages: Math.ceil(countOfOrders / pagination.limit),
+				};
+			});
+		}
+	}, [countOfOrders]);
 
 	return (
 		<section className="border-l border-neutral-300  min-h-[79vh] relative">
@@ -88,7 +172,7 @@ const MyOrders = () => {
 											alt="random-image.jpg"
 										/>
 										{totalProductsCount > 1 && (
-											<span className="text-red-700 absolute bottom-0 right-1 z-10 text-sm font-medium text-shadow-xs">
+											<span className="text-red-700 absolute bottom-0 right-1 z-10 text-[13px] font-medium text-shadow-xs text-shadow-white">
 												+ {totalProductsCount - 1}
 											</span>
 										)}
@@ -99,7 +183,7 @@ const MyOrders = () => {
 											OrderID: &nbsp;&nbsp;{ord._id}
 										</p>
 
-										<div className="flex justify-between items-center">
+										<div className="flex justify-between items-center md:text-base sm:text-sm text-xs">
 											<p className="overflow-hidden text-ellipsis line-clamp-1 flex-1">
 												{productName}
 											</p>
@@ -126,13 +210,18 @@ const MyOrders = () => {
 							</div>
 						);
 					})}
-
+				<div ref={elRef} className="invisible"></div>
 				{status === "failure" && (
 					<div className="font-semibold p-4">No Order Found! </div>
 				)}
 
 				{status === "pending" && (
-					<div className="font-semibold px-[15%] pt-[10%] w-fit">
+					<div
+						className={twMerge(
+							"font-semibold px-[15%] pt-[10%] w-fit",
+							data[0] && "px-[15%] pt-4"
+						)}
+					>
 						<Spinner borderClr="text-amber-600" />
 					</div>
 				)}

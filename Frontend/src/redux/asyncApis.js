@@ -154,12 +154,12 @@ export const updateAddressAPI = async ({ isDefault = false, id } = {}, thunkApi)
 }
 
 /* ORDER APIs */
-export const fetchOrderAPI = async ({ page = 1, limit = 10 } = {}, thunkApi) => {
+export const fetchOrderAPI = async ({ page = 1, limit = 10, filter } = {}, thunkApi) => {
     try {
         const {signal} = thunkApi
         const { data: responseData } = await authAxiosInstance({
             ...SummaryApi.fetchOrders,
-            data: { page, limit },
+            data: { page, limit, filter },
             signal
         });
         return responseData.data
