@@ -151,8 +151,10 @@ const MyOrders = () => {
 								className="_order px-4 py-6 border-2 border-gray-100 rounded-2xl flex flex-col justify-center gap-3"
 							>
 								<div className="flex items-center gap-2 text-xs">
-									<div className="flex justify-center items-center gap-0.5 p-1 px-1.5 bg-orange-100 border border-orange-50 rounded-xl">
-										<GoDotFill size="13" color="oklch(55.3% 0.195 38.402)" />
+									<div className={twMerge("flex justify-center items-center gap-0.5 p-1 px-1.5 bg-orange-100 border border-orange-50 rounded-xl",
+										delivered && "bg-green-100 border-green-50"
+									)}>
+										<GoDotFill size="13" color={ delivered ? "oklch(52.7% 0.154 150.069)" : "oklch(55.3% 0.195 38.402)"} />
 
 										{delivered ? (
 											<span className="text-green-700 font-medium">Delivered</span>
