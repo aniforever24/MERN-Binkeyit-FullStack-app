@@ -26,7 +26,8 @@ const productSchema = new Schema({
     unit: {
         type: String,
         default: "",
-        required: true
+        required: true,
+        maxLength: 12
     },
     stock: {
         type: Number,
