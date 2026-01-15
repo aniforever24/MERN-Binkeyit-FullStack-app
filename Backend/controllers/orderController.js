@@ -11,12 +11,13 @@ import CartProduct from "../models/database models/CartProductsModel.js"
 export const getOrdersController = async (req, res) => {
     try {
         const userId = req.id;
-        const { page = 1, limit = 10 } = req.body;
+        let { page = 1, limit = 10, filter } = req.body;
 
         let skip = (page - 1) * limit;
 
-        const orders = await Order.find({ userId }).limit(limit).skip(skip)
         const countOfOrders = await Order.find({ userId }).countDocuments();
+
+        const orders = await Order.find({ userId, filter }).limit(limit).skip(skip).sort({ createdAt: -1 });
 
         if (!orders) {
             return res.status(204).json({
@@ -26,10 +27,24 @@ export const getOrdersController = async (req, res) => {
             })
         }
 
+        const countOfOrdersLeft = (function () {
+            if (countOfOrders > (page * limit)) {
+                return countOfOrders - page * limit
+            }
+            return 0
+        })();
+        const newPage = (() => {
+            const lastPage = Math.ceil(countOfOrders / limit)
+            if (page === lastPage) {
+                return page
+            };
+            return page + 1;
+        })();
+
         return res.status(200).json({
             success: true,
             message: "Orders fetched successfuly",
-            data: { orders, countOfOrders, pagination: {page, limit} }
+            data: { orders, countOfOrders, page: newPage, limit, countOfOrdersLeft }
         })
 
     } catch (error) {
@@ -176,17 +191,27 @@ export const webhookEndpointController = async (req, res) => {
 
             // Get line items defined in sessions object in onlinePayment endpoint
             const line_items = await Stripe.checkout.sessions.listLineItems(session.id)
+            // console.log('line_items:', line_items)
 
             const deliveryAddress = await Address.findById(session.metadata.shipping_address)
 
 
             const productIds = line_items.data.map((item) => item.metadata.productId);
-            const cartItemsIds = line_items.data.map((item) => item.metadata.cartId);
+            const cartItemsDetails = line_items.data.map((item) => {
+                return {
+                    cartId: item.metadata.cartId,
+                    quantity: item.quantity,
+                }
+            });
 
             let products = await Promise.all(productIds.map((prodId) => Product.findById(prodId).populate('categories').populate('subCategories').lean()));
-            let cartItems = await Promise.all(cartItemsIds.map(cartId => {
+            let cartItems = await Promise.all(cartItemsDetails.map(cartObj => {
+                const {cartId, quantity} = cartObj;
                 return (
-                    CartProduct.findById(cartId).populate([
+                    CartProduct.findByIdAndUpdate(cartId, {
+                        $set: {
+                            quantity
+                        }}, {new: true}).populate([
                         {
                             path: 'product',
                             populate: [
@@ -344,6 +369,7 @@ export const onlinePaymentController = async (req, res) => {
         })
 
     } catch (error) {
+        console.log('error from onlinePaymentController:', error)
         genericServerErr(res, error)
     }
 }
