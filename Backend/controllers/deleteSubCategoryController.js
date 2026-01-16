@@ -3,12 +3,26 @@ import cloudinaryConfig from "../config/cloudinaryConfig.js";
 import { fetchAssetDetails, cloudinaryDelete, fetchPublicDetails } from "../utlis/cloudinaryUpdate.js";
 import { getCloudinaryPublicId, getLocalDateString } from "../utlis/utilities.js";
 import SubCategory from "../models/database models/SubCategoryModel.js";
+import Product from "../models/database models/ProductModel.js";
 
 
 const deleteSubCategoryController = async (req, res) => {
     try {
         const { subCategoryid, image } = req.body;
         // console.log(subCategoryid, image)
+
+        // Check if this subCategory is in use elswhere
+        const result = await Product.countDocuments({
+            subCategories: { $in: [subCategoryid] }
+        })
+        if (result) {
+            return res.status(403).json({
+                success: false,
+                message: "This sub category is in use so cannot be deleted",
+                error: "sub category cannot be deleted",
+                data: { countOfProducts: result }
+            })
+        }
 
         // Extract cloudinary public id from image
         const publicId = getCloudinaryPublicId(image)

@@ -8,8 +8,7 @@ import { genericServerErr } from "../utlis/genericServerErr.js"
 const deleteCategoryController = async (req, res) => {
   try {
     const { categoryId } = req.body
-    // Convert categoryId to objectId
-
+    
     // First make sure if this category id is not being in use elswhere
     // (like in products and in subcategories)
     const countInSubCategory = await SubCategory.countDocuments({
@@ -18,8 +17,13 @@ const deleteCategoryController = async (req, res) => {
     const countInProduct = await Product.countDocuments({
       categories: { $in: [categoryId] }
     })
-    if (countInSubCategory > 0 || countInProduct > 0) {
-      return res.status(403).json({ success: false, message: "This category is in use, so it cannot be deleted", error: "Cannot delete this category", data: { countInSubCategory, countInProduct } })
+    if (countInSubCategory || countInProduct) {
+      return res.status(403).json({
+        success: false,
+        message: "This category is in use, so it cannot be deleted",
+        error: "Cannot delete this category",
+        data: { countInSubCategory, countInProduct } 
+      })
     }
 
     // get publicId from cloudinary from categoryId and delete 
