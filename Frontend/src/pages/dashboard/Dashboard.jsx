@@ -132,7 +132,7 @@ const Dashboard = () => {
 
 				{/* Right Dashboard */}
 				<div className="bg-white max-sm:justify-center sm:min-h-[540px]  min-h-[70vh] w-full">
-					<Outlet key={location.key} />
+					<Outlet />
 				</div>
 			</Layout>
 		</section>
