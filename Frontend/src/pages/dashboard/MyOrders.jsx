@@ -7,6 +7,7 @@ import { formatCurrency, getLocaleDate } from "../../utils/UtilityFunctions";
 import Spinner from "../../components/Spinner";
 import { twMerge } from "tailwind-merge";
 import { notifyError } from "../../utils/foxToast";
+import { hasDuplicates } from "../../utils/UtilityFunctions";
 
 const MyOrders = () => {
 	const dispatch = useDispatch();
@@ -102,7 +103,7 @@ const MyOrders = () => {
 	}, []);
 
 	useEffect(() => {
-		// console.log('data:', data)
+		console.log('data has duplicates:', hasDuplicates(data))
 		let observer;
 		if (data.length) {
 			observer = infiniteScrolling(elRef.current, fetchData, pagination);

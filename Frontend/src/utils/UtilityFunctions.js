@@ -165,3 +165,17 @@ export const getLocaleDate = (dt = new Date(), { sep = "/", ...options } = {}) =
     }
     return dtObject.toLocaleDateString('in', options)
 }
+
+// Return boolean if a data array has duplicates (data array must be an array of objects with _id key)
+export const hasDuplicates = (data)=> {
+    let seen = {};
+    
+    for (const obj of data) {
+        if(seen[obj._id]) {
+            return true
+        }
+        seen[obj._id] = true;
+    }
+    
+    return false;
+}
